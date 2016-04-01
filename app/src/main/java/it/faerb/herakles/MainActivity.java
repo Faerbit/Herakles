@@ -53,12 +53,12 @@ public class MainActivity extends AppCompatActivity {
         MapView map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
-        IMapController mapController = map.getController();
+        final IMapController mapController = map.getController();
         mapController.setZoom(9);
-        //GpsMyLocationProvider locationProvider = new GpsMyLocationProvider(this);
         this.locationOverlay = new MyLocationNewOverlay(this, map);
-        //this.locationOverlay.enableFollowLocation();
         map.getOverlays().add(this.locationOverlay);
+        locationOverlay.enableMyLocation();
+        locationOverlay.enableFollowLocation();
     }
 
     @Override
