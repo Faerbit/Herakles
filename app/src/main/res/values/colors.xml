@@ -3,4 +3,15 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="primary_material_light_1">#2196f3</color>
+    <color name="primary_dark_material_dark">#1976d2</color>
+    <color name="accent_material_dark">#ffab40</color>
+    <color name="primary_text_material_dark">#212121</color>
+    <color name="background_material_dark">#f5f5f5</color>
+    <color name="foreground_material_dark">#fafafa</color>
+    <color name="black">#1565c0</color>
+    <color name="secondary_text_material_dark">#616161</color>
+    <color name="primary_material_light">#03a9f4</color>
+    <color name="primary_dark_material_light">#0288d1</color>
+    <color name="accent_material_light">#ffc400</color>
 </resources>

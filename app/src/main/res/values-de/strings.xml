@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Herakles</string>
     <string name="button_label_start">Start</string>
     <string name="button_label_stop">Stop</string>
-    <string name="text_label_time">Time:</string>
-    <string name="text_label_distance">Distance:</string>
+    <string name="text_label_distance">Distanz:</string>
+    <string name="text_label_time">Zeit:</string>
 </resources>
