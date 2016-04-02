@@ -19,7 +19,7 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     final static String TAG = "Herakles.LocLogService";
 
-    LocationManager locationManager;
+    private LocationManager locationManager;
 
     public LocationLoggerService() {
     }
@@ -64,7 +64,7 @@ public class LocationLoggerService extends Service implements LocationListener {
     public void onStatusChanged(String s, int i, Bundle b) {
     }
 
-    public void subscribeToLocationUpdates() {
+    private void subscribeToLocationUpdates() {
         Log.d(TAG, "subscribeToLocationUpdates: begin");
         this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)

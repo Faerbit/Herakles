@@ -1,11 +1,12 @@
 package it.faerb.herakles;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -51,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
         } // else: We already have permissions, so handle as normal
     }
 
+    private Handler refreshHandler = new Handler();
+    private static Boolean isRunning = false;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,9 +84,64 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "Clicked start Button");
                 startService(new Intent(v.getContext(), LocationLoggerService.class));
+                MainActivity.isRunning = true;
+                refreshHandler.postDelayed(refresh, 1000);
             }
         });
+
+        final Button stopButton = (Button) findViewById(R.id.stop_button);
+        assert stopButton !=null;
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Clicked stop Button");
+                stopService(new Intent(v.getContext(), LocationLoggerService.class));
+                refreshHandler.removeCallbacksAndMessages(null);
+                MainActivity.isRunning = false;
+                clearData();
+            }
+        });
+        if (MainActivity.isRunning) {
+            refreshHandler.postDelayed(refresh, 1000);
+        }
     }
+
+    private void clearData() {
+        lastUpdateDistance = 0;
+        lastUpdateIndex = 1;
+        LocationLog.clear();
+    }
+
+    private int lastUpdateDistance = 0;
+    private int lastUpdateIndex = 1;
+
+    private final Runnable refresh = new Runnable() {
+        @Override
+        public void run() {
+            List<Location> locList = LocationLog.getLocationLog();
+            Log.d(TAG, "run: locList length:" + locList.size());
+
+            if (locList.size() > 1) {
+                long startTime = locList.get(0).getElapsedRealtimeNanos();
+                long elapsedNanos = SystemClock.elapsedRealtimeNanos() - startTime;
+                int elapsedSeconds = (int) (elapsedNanos / 1e9);
+                TextView timeView = (TextView) findViewById(R.id.text_view_time);
+                assert timeView != null;
+                timeView.setText(Util.formatSeconds(elapsedSeconds));
+
+                for(int i = lastUpdateIndex; i<locList.size(); i++) {
+                    lastUpdateDistance += locList.get(i).distanceTo(locList.get(i-1));
+                }
+                lastUpdateIndex = locList.size();
+
+                TextView distanceView = (TextView) findViewById(R.id.text_view_distance);
+                assert distanceView != null;
+                distanceView.setText(lastUpdateDistance + " m");
+            }
+
+            MainActivity.this.refreshHandler.postDelayed(refresh, 1000);
+        }
+    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -113,5 +174,19 @@ public class MainActivity extends AppCompatActivity {
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (MainActivity.isRunning) {
+            refreshHandler.postDelayed(refresh, 1000);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        refreshHandler.removeCallbacksAndMessages(null);
     }
 }
