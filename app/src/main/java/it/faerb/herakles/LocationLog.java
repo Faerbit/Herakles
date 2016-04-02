@@ -4,6 +4,8 @@ import android.location.Location;
 
 import java.util.ArrayList;
 
+
+/* This is the data storage for the current sports activity of the user*/
 public class LocationLog {
     private static class LocationLogHolder {
         static final LocationLog log = new LocationLog();
@@ -16,7 +18,7 @@ public class LocationLog {
     ArrayList<Location> locationLog;
 
     private LocationLog() {
-        locationLog = new ArrayList<>(Location);
+        locationLog = new ArrayList<>();
     }
 
     public static ArrayList<Location> getLocationLog() {
