@@ -1,13 +1,19 @@
 package it.faerb.herakles;
 
 import android.Manifest;
-import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
@@ -21,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+
+    static final String TAG = "Herakles.MainActivity";
 
     // START PERMISSION CHECK
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
@@ -43,8 +51,6 @@ public class MainActivity extends AppCompatActivity {
         } // else: We already have permissions, so handle as normal
     }
 
-    private MyLocationNewOverlay locationOverlay;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,18 +61,29 @@ public class MainActivity extends AppCompatActivity {
             checkPermissions();
         }
         MapView map = (MapView) findViewById(R.id.map);
+        assert map != null;
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
-        this.locationOverlay = new MyLocationNewOverlay(this, map);
-        map.getOverlays().add(this.locationOverlay);
+        MyLocationNewOverlay locationOverlay = new MyLocationNewOverlay(this, map);
+        map.getOverlays().add(locationOverlay);
         locationOverlay.enableMyLocation();
         locationOverlay.enableFollowLocation();
+
+        final Button startButton = (Button) findViewById(R.id.start_button);
+        assert startButton != null;
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Clicked start Button");
+                startService(new Intent(v.getContext(), LocationLoggerService.class));
+            }
+        });
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
                 Map<String, Integer> perms = new HashMap<>();
