@@ -1,13 +1,19 @@
 package it.faerb.herakles;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GpsStatus.Listener, LocationListener {
 
     static final String TAG = "Herakles.MainActivity";
 
@@ -56,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Handler refreshHandler = new Handler();
     private static Boolean isRunning = false;
+    private LocationManager locationManager;
 
 
     @Override
@@ -85,26 +93,50 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "Clicked start Button");
                 startService(new Intent(v.getContext(), LocationLoggerService.class));
-                MainActivity.isRunning = true;
+                isRunning = true;
                 refreshHandler.postDelayed(refresh, 1000);
             }
         });
 
         final Button stopButton = (Button) findViewById(R.id.stop_button);
-        assert stopButton !=null;
+        assert stopButton != null;
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "Clicked stop Button");
                 stopService(new Intent(v.getContext(), LocationLoggerService.class));
                 refreshHandler.removeCallbacksAndMessages(null);
-                MainActivity.isRunning = false;
+                isRunning = false;
                 clearData();
             }
         });
-        if (MainActivity.isRunning) {
+
+        if (isRunning) {
             refreshHandler.postDelayed(refresh, 1000);
         }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
+            assert imageView != null;
+            imageView.setImageResource(R.drawable.ic_location_searching_24dp);
+        }
+        else {
+            ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
+            assert imageView != null;
+            imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
+        }
+
+        locationManager.addGpsStatusListener(this);
     }
 
     private void clearData() {
@@ -120,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             List<Location> locList = LocationLog.getLocationLog();
-            Log.d(TAG, "run: locList length:" + locList.size());
 
             if (locList.size() > 1) {
                 long startTime = locList.get(0).getElapsedRealtimeNanos();
@@ -202,5 +233,67 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
+    }
+
+    @Override
+    public void onGpsStatusChanged(int event) {
+        switch (event) {
+            case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                updateGpsInfo();
+            case GpsStatus.GPS_EVENT_FIRST_FIX:
+                ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
+                assert imageView != null;
+                imageView.setImageResource(R.drawable.ic_gps_fixed_24dp);
+        }
+    }
+
+    private void updateGpsInfo() {
+        int totalSatellites = 0;
+        int satellitesInFix = 0;
+        for (GpsSatellite satellite: locationManager.getGpsStatus(null).getSatellites()) {
+            if(satellite.usedInFix()) {
+                satellitesInFix++;
+            }
+            totalSatellites++;
+        }
+        TextView textView = (TextView) findViewById(R.id.text_view_satellites);
+        assert textView != null;
+        textView.setText(satellitesInFix + "/" + totalSatellites);
+    }
+
+    @Override
+    public void onLocationChanged(Location loc) {
+        TextView textView = (TextView) findViewById(R.id.text_view_gps_error);
+        assert textView != null;
+        textView.setText(String.valueOf(loc.getAccuracy()) + " m");
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle b) {}
+
+    @Override
+    public void onProviderEnabled(String string) {
+        if (LocationManager.GPS_PROVIDER.equals(string)) {
+            ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
+            assert imageView != null;
+            imageView.setImageResource(R.drawable.ic_location_searching_24dp);
+        }
+    }
+
+    @Override
+    public void onProviderDisabled(String string) {
+        if (LocationManager.GPS_PROVIDER.equals(string)) {
+            ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
+            assert imageView != null;
+            imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
+
+            TextView textView = (TextView) findViewById(R.id.text_view_satellites);
+            assert textView != null;
+            textView.setText("0/0");
+
+            textView = (TextView) findViewById(R.id.text_view_gps_error);
+            assert textView != null;
+            textView.setText("0 m");
+        }
     }
 }
