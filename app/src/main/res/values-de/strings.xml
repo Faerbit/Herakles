@@ -5,4 +5,12 @@
     <string name="button_label_stop">Stop</string>
     <string name="text_label_distance">Distanz:</string>
     <string name="text_label_time">Zeit:</string>
+    <string name="permission_request_intro">Berechtigungen:</string>
+    <string name="permission_request_location">Standort um den Benutzer zu lokalisieren.</string>
+    <string name="permission_request_storage">Speicher um die Kartenteile zu Speichern.</string>
+    <string name="permission_response_granted">Alle Berechtigungen gewährt.</string>
+    <string name="permission_response_location">Standort Berechtigung wird benötigt um den Benutzer zu lokalisieren.</string>
+    <string name="permission_response_storage">Speicher Berechtigung wird benötigt um die Kartenteile zu Speichern um den Datenverbrauch zu senken.</string>
+    <string name="text_label_gps_error">Fehler:</string>
+    <string name="text_label_satellites">Satelliten:</string>
 </resources>

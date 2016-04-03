@@ -4,4 +4,12 @@
     <string name="button_label_stop">Stop</string>
     <string name="text_label_time">Time:</string>
     <string name="text_label_distance">Distance:</string>
+    <string name="text_label_satellites">Satellites:</string>
+    <string name="text_label_gps_error">Error:</string>
+    <string name="permission_request_intro">permissions:</string>
+    <string name="permission_request_storage">Storage access to store map tiles.</string>
+    <string name="permission_request_location">Location to show user location.</string>
+    <string name="permission_response_granted">All permissions granted.</string>
+    <string name="permission_response_location">Location permission is required to show the user\'s location on map.</string>
+    <string name="permission_response_storage">Storage permission is required to store map tiles to reduce data usage and for offline usage.</string>
 </resources>
