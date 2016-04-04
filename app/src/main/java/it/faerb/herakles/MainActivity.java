@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
     private Handler refreshHandler = new Handler();
     private static Boolean isRunning = false;
     private LocationManager locationManager;
+    private MyLocationNewOverlay locationOverlay;
 
 
     @Override
@@ -81,9 +82,8 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
-        MyLocationNewOverlay locationOverlay = new MyLocationNewOverlay(this, map);
+        locationOverlay = new MyLocationNewOverlay(this, map);
         map.getOverlays().add(locationOverlay);
-        locationOverlay.enableMyLocation();
         locationOverlay.enableFollowLocation();
 
         final Button startButton = (Button) findViewById(R.id.start_button);
@@ -114,29 +114,19 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
         if (isRunning) {
             refreshHandler.postDelayed(refresh, 1000);
         }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
             assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_searching_24dp);
-        }
-        else {
+        } else {
             ImageView imageView = (ImageView) findViewById(R.id.image_view_gps);
             assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
         }
 
-        locationManager.addGpsStatusListener(this);
+        startLocationUpdates();
     }
 
     private void clearData() {
@@ -145,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
         LocationLog.clear();
     }
 
-    private int lastUpdateDistance = 0;
+    private float lastUpdateDistance = 0;
     private int lastUpdateIndex = 1;
 
     private final Runnable refresh = new Runnable() {
@@ -161,14 +151,14 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
                 assert timeView != null;
                 timeView.setText(Util.formatSeconds(elapsedSeconds));
 
-                for(int i = lastUpdateIndex; i<locList.size(); i++) {
-                    lastUpdateDistance += locList.get(i).distanceTo(locList.get(i-1));
+                for (int i = lastUpdateIndex; i < locList.size(); i++) {
+                    lastUpdateDistance += locList.get(i).distanceTo(locList.get(i - 1));
                 }
                 lastUpdateIndex = locList.size();
 
                 TextView distanceView = (TextView) findViewById(R.id.text_view_distance);
                 assert distanceView != null;
-                distanceView.setText(lastUpdateDistance + " m");
+                distanceView.setText(Util.formatDistance(lastUpdateDistance));
             }
 
             MainActivity.this.refreshHandler.postDelayed(refresh, 1000);
@@ -211,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
                     // Permission Denied
                     Toast.makeText(this,
                             getResources().getString(R.string.permission_response_storage) +
-                            "\n" + getResources().getString(R.string.permission_response_location),
+                                    "\n" + getResources().getString(R.string.permission_response_location),
                             Toast.LENGTH_SHORT).show();
                 }
             }
@@ -227,12 +217,40 @@ public class MainActivity extends AppCompatActivity implements GpsStatus.Listene
         if (MainActivity.isRunning) {
             refreshHandler.postDelayed(refresh, 1000);
         }
+        startLocationUpdates();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
+        stopLocationUpdates();
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        locationManager.addGpsStatusListener(this);
+        locationOverlay.enableMyLocation();
+    }
+
+    private void stopLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.removeUpdates(this);
+        locationManager.removeGpsStatusListener(this);
+        locationOverlay.disableMyLocation();
     }
 
     @Override
