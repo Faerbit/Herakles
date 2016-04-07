@@ -13,4 +13,8 @@
     <string name="permission_response_storage">Speicher Berechtigung wird benötigt um die Kartenteile zu Speichern um den Datenverbrauch zu senken.</string>
     <string name="text_label_gps_error">Fehler:</string>
     <string name="text_label_satellites">Satelliten:</string>
+    <string-array name="navigation_menu">
+        <item>Aufzeichnen</item>
+        <item>Protokoll</item>
+    </string-array>
 </resources>
