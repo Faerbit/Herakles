@@ -1,6 +1,6 @@
 package it.faerb.herakles;
 
-class Util {
+public class Util {
 
     public static String formatSeconds(int pSeconds) {
         int hours = pSeconds / 3600;

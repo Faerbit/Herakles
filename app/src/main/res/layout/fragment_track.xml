@@ -1,0 +1,133 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="layout.TrackFragment">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="100"
+        android:gravity="center">
+
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_weight="95">
+
+            <TextView
+                android:id="@+id/text_view_time_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:gravity="start"
+                android:text="@string/text_label_time"/>
+            <TextView
+                android:id="@+id/text_view_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:gravity="end"
+                android:layout_below="@id/text_view_time_label"
+                android:text="00:00:00"/>
+            <TextView
+                android:id="@+id/text_view_distance_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:gravity="start"
+                android:layout_below="@id/text_view_time"
+                android:text="@string/text_label_distance"/>
+            <TextView
+                android:id="@+id/text_view_distance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="40sp"
+                android:gravity="end"
+                android:layout_below="@id/text_view_distance_label"
+                android:text="0 m"/>
+
+            <LinearLayout
+                android:id="@+id/layout_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_below="@id/text_view_distance">
+
+                <Button
+                    android:id="@+id/stop_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="50"
+                    android:textSize="20sp"
+                    android:text="@string/button_label_stop"/>
+
+                <Button
+                    android:id="@+id/start_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="50"
+                    android:textSize="20sp"
+                    android:text="@string/button_label_start"/>
+            </LinearLayout>
+
+
+
+            <LinearLayout
+                android:id="@+id/layout_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_alignParentBottom="true">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="30"
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:id="@+id/image_view_gps"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_location_disabled_24dp"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:text="@string/text_label_satellites"
+                        android:layout_marginStart="2sp" />
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/text_view_satellites"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="20"
+                    android:gravity="end"
+                    android:layout_marginEnd="5sp"
+                    android:text="0/0"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="25"
+                    android:gravity="start"
+                    android:text="@string/text_label_gps_error"/>
+                <TextView
+                    android:id="@+id/text_view_gps_error"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="25"
+                    android:gravity="end"
+                    android:text="0 m"/>
+            </LinearLayout>
+            <org.osmdroid.views.MapView
+                android:id="@+id/map"
+                android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:layout_below="@id/layout_buttons"
+                android:layout_above="@id/layout_status"/>
+
+        </RelativeLayout>
+    </LinearLayout>
+
+</FrameLayout>
