@@ -119,13 +119,12 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             ImageView imageView = (ImageView) view.findViewById(R.id.image_view_gps);
             assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_searching_24dp);
+            startLocationUpdates();
         } else {
             ImageView imageView = (ImageView) view.findViewById(R.id.image_view_gps);
             assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
         }
-
-        startLocationUpdates();
         return view;
     }
 
