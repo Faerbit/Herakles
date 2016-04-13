@@ -1,19 +1,9 @@
 package it.faerb.herakles;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -26,24 +16,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import org.osmdroid.api.IMapController;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import layout.TrackFragment;
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -87,7 +66,7 @@ public class MainActivity extends AppCompatActivity  {
         setSupportActionBar(toolbar);
 
         String[] titles = getResources().getStringArray(R.array.navigation_menu);
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         assert  drawerLayout != null;
         ListView navDrawer = (ListView) findViewById(R.id.nav_drawer);
         assert navDrawer != null;
@@ -96,6 +75,31 @@ public class MainActivity extends AppCompatActivity  {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, String.format("onItemClick: %d", position));
+
+                Fragment fragment = null;
+                Class fragmentClass;
+                switch (position) {
+                    case 0:
+                        fragmentClass = TrackFragment.class;
+                        break;
+                    case 1:
+                        fragmentClass = LocationLogListFragment.class;
+                        break;
+                    default:
+                        fragmentClass = TrackFragment.class;
+                }
+                try {
+                    fragment = (Fragment) fragmentClass.newInstance();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                fragmentManager.beginTransaction().replace(R.id.frame_layout_content, fragment)
+                        .commit();
+
+                // close drawer after item is selected
+                drawerLayout.closeDrawers();
             }
         });
         navDrawer.setItemChecked(0, true);
@@ -112,7 +116,7 @@ public class MainActivity extends AppCompatActivity  {
 
         Fragment fragment = null;
         try {
-            fragment = layout.TrackFragment.class.newInstance();
+            fragment = TrackFragment.class.newInstance();
         }
         catch (Exception e) {
             e.printStackTrace();

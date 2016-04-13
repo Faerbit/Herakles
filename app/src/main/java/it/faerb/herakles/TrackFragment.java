@@ -1,4 +1,4 @@
-package layout;
+package it.faerb.herakles;
 
 import android.Manifest;
 import android.content.Context;
@@ -29,13 +29,6 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.List;
-
-import it.faerb.herakles.LocationLog;
-import it.faerb.herakles.LocationLoggerService;
-import it.faerb.herakles.MainActivity;
-import it.faerb.herakles.R;
-
-import it.faerb.herakles.Util;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -132,7 +125,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private void clearData() {
         lastUpdateDistance = 0;
         lastUpdateIndex = 1;
-        LocationLog.clear();
+        CurrentLocationLog.clear();
     }
 
     private float lastUpdateDistance = 0;
@@ -141,7 +134,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private final Runnable refresh = new Runnable() {
         @Override
         public void run() {
-            List<Location> locList = LocationLog.getLocationLog();
+            List<Location> locList = CurrentLocationLog.getLocationLog();
 
             if (locList.size() > 1) {
                 long startTime = locList.get(0).getElapsedRealtimeNanos();
