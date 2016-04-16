@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -27,7 +28,7 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
         super.onCreate(savedInstanceState);
 
         ListAdapter adapter = new LocationLogAdapter(getContext(), R.layout.locationlog_list_item,
-                LocationLog.loadFiles(getContext(), 0, 1));
+                LocationLog.loadFiles(getContext(), 0, 20));
         this.setListAdapter(adapter);
     }
 
@@ -37,13 +38,16 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getListView().setOnScrollListener(this);
-        ListView listView = (ListView) getView().findViewById(R.id.list_view_logs);
-        assert listView != null;
-        if (getListAdapter().getCount() > 0) {
-            noItemsFitScreen = listView.getHeight() / listView.getChildAt(0).getHeight();
-            // to be sure
-            noItemsFitScreen += 1;
-        }
+        getListView().post(new Runnable() {
+            @Override
+            public void run() {
+                if (getListAdapter().getCount() > 0) {
+                    noItemsFitScreen = getListView().getHeight() / getListView().getChildAt(0).getHeight();
+                    // to be sure
+                    noItemsFitScreen += 2;
+                }
+            }
+        });
     }
 
     public static LocationLogListFragment newInstance() {
@@ -61,14 +65,14 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                          int totalItemCount) {
-        Log.d(TAG, String.format("onScroll: first: %d, visible: %d, total: %d", firstVisibleItem,
-                visibleItemCount, totalItemCount));
+        //Log.d(TAG, String.format("onScroll: first: %d, visible: %d, total: %d", firstVisibleItem,
+        //        visibleItemCount, totalItemCount));
         LocationLogAdapter adapter = (LocationLogAdapter) this.getListAdapter();
-        if(totalItemCount <= LocationLog.getFilesCount(getContext())) {
-            int start = firstVisibleItem + visibleItemCount;
-            int end = start + (noItemsFitScreen - visibleItemCount);
-            Log.d(TAG, String.format("onScroll: loading %d - %d", start, end));
-            adapter.addAll(LocationLog.loadFiles(getContext(), start, end));
+        if(totalItemCount < LocationLog.getFilesCount(getContext())) {
+            int end = totalItemCount + (noItemsFitScreen - visibleItemCount);
+            //Log.d(TAG, String.format("onScroll: loading %d - %d",totalItemCount, end));
+            adapter.addAll(LocationLog.loadFiles(getContext(), totalItemCount, end));
+            adapter.notifyDataSetChanged();
         }
     }
 }

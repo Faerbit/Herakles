@@ -68,33 +68,26 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
 
-        final Button startButton = (Button) view.findViewById(R.id.start_button);
-        assert startButton != null;
-        startButton.setOnClickListener(new View.OnClickListener() {
+        final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
+        assert startStopButton != null;
+        startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Clicked start Button");
-                getActivity().startService(new Intent(v.getContext(), LocationLoggerService.class));
-                isRunning = true;
-                refreshHandler.post(refresh);
+            public void onClick(View view) {
+                startStopButtonClick(view);
             }
         });
 
-        final Button stopButton = (Button) view.findViewById(R.id.stop_button);
-        assert stopButton != null;
-        stopButton.setOnClickListener(new View.OnClickListener() {
+        final Button newButton = (Button) view.findViewById(R.id.button_new);
+        assert newButton != null;
+        newButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Clicked stop Button");
-                getActivity().stopService(new Intent(v.getContext(), LocationLoggerService.class));
-                refreshHandler.removeCallbacksAndMessages(null);
-                isRunning = false;
-                clearData();
+            public void onClick(View view) {
+                newButtonClick();
             }
         });
 
         if (isRunning) {
-            refreshHandler.postDelayed(refresh, 1000);
+            refreshHandler.post(refresh);
         }
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
@@ -111,6 +104,27 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         return view;
     }
 
+    private void newButtonClick() {
+        LocationLog.save(getContext());
+        clearData();
+    }
+
+    private void startStopButtonClick(View view) {
+        if (!isRunning) {
+            Log.d(TAG, "Clicked start Button");
+            getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
+            isRunning = true;
+            ((Button) view).setText(getText(R.string.button_label_stop));
+        }
+        else {
+            Log.d(TAG, "Clicked stop Button");
+            getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
+            isRunning = false;
+            LocationLog.save(getContext());
+            ((Button) view).setText(getText(R.string.button_label_start));
+        }
+    }
+
 
     private void clearData() {
         LocationLog.clear();
@@ -122,11 +136,18 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         public void run() {
             TextView timeView = (TextView) getView().findViewById(R.id.text_view_time);
             assert timeView != null;
-            timeView.setText(Util.formatDuration(LocationLog.getCurrentLocationLog().getDuration()));
+            if (isRunning) {
+                timeView.setText(Util.formatDuration(LocationLog.getElapsedSeconds()));
+            }
+            else {
+                timeView.setText(Util.formatDuration(LocationLog
+                        .getCurrentLocationLog().getDuration()));
+            }
 
             TextView distanceView = (TextView) getView().findViewById(R.id.text_view_distance);
             assert distanceView != null;
-            distanceView.setText(Util.formatDistance(LocationLog.getCurrentLocationLog().getDistance()));
+            distanceView.setText(Util.formatDistance(LocationLog
+                    .getCurrentLocationLog().getDistance()));
 
             TrackFragment.this.refreshHandler.postDelayed(refresh, 1000);
         }
@@ -198,8 +219,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     @Override
     public void onLocationChanged(Location loc) {
         TextView textView = (TextView) getView().findViewById(R.id.text_view_gps_error);
-        assert textView != null;
-        textView.setText(String.valueOf(loc.getAccuracy()) + " m");
+        if (textView != null) {
+            textView.setText(String.valueOf(loc.getAccuracy()) + " m");
+        }
     }
 
     @Override
@@ -238,7 +260,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     public void onResume() {
         super.onResume();
         if (TrackFragment.isRunning) {
-            refreshHandler.postDelayed(refresh, 1000);
+            refreshHandler.post(refresh);
         }
         startLocationUpdates();
     }

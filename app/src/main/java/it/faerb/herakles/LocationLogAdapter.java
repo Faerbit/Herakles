@@ -19,7 +19,7 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
     private ArrayList<LocationLog> data = null;
 
     public LocationLogAdapter(Context context, int layoutResourceId, ArrayList<LocationLog> data) {
-        super(context, layoutResourceId, data.toArray(new LocationLog[data.size()]));
+        super(context, layoutResourceId, data);
         this.context = context;
         this.layoutResourceId = layoutResourceId;
         this.data = data;

@@ -58,15 +58,15 @@
                 android:layout_below="@id/text_view_distance">
 
                 <Button
-                    android:id="@+id/stop_button"
+                    android:id="@+id/button_new"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
                     android:textSize="20sp"
-                    android:text="@string/button_label_stop"/>
+                    android:text="@string/button_label_new"/>
 
                 <Button
-                    android:id="@+id/start_button"
+                    android:id="@+id/button_start_stop"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="50"
