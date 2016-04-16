@@ -113,16 +113,18 @@ public class MainActivity extends AppCompatActivity  {
         );
         drawerLayout.setDrawerListener(drawerToggle);
         drawerToggle.syncState();
-
-        Fragment fragment = null;
-        try {
-            fragment = TrackFragment.class.newInstance();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.frame_layout_content, fragment).commit();
+        fragmentManager.beginTransaction().replace(R.id.frame_layout_content,
+                TrackFragment.newInstance()).commit();
+    }
+
+    public void transitionToTrackFragment() {
+        ListView navDrawer = (ListView) findViewById(R.id.nav_drawer);
+        assert navDrawer != null;
+        navDrawer.setItemChecked(0, true);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.frame_layout_content,
+                TrackFragment.newInstance()).commit();
     }
 
 

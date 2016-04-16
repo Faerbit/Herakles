@@ -59,6 +59,12 @@ public class LocationLog {
         }
     }
 
+    public static synchronized void replaceCurrentLocationLog(Context context, int id) {
+        Log.d(TAG, String.format("replaceCurrentLocationLog: before locs: %d", getCurrentLocationLog().locationLog.size()));
+        currentLocationLog = loadFile(context, id);
+        Log.d(TAG, String.format("replaceCurrentLocationLog: after locs: %d", getCurrentLocationLog().locationLog.size()));
+    }
+
     public float getDistance() {
         return distance;
     }
@@ -92,12 +98,11 @@ public class LocationLog {
             outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
             Gson gson = new Gson();
             outputStream.write(gson.toJson(getCurrentLocationLog()).getBytes());
-            //ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            //objectOutputStream.writeObject(getCurrentLocationLog());
         }
         catch (Exception e){
            e.printStackTrace();
         }
+        refreshFileCache(context);
     }
 
     private String getFilename() {
@@ -113,44 +118,58 @@ public class LocationLog {
     }
 
     public static int getFilesCount(Context context) {
-        int ret = getFiles(context).length;
+        int ret = getFiles(context).size();
         //Log.d(TAG, String.format("getFilesCount: %d", ret));
         return ret;
     }
 
-    private static File[] getFiles(Context context) {
+    private static ArrayList<File> fileListCache = null;
+
+    private static void refreshFileCache(Context context) {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 return filename.endsWith(".loclog");
             }
         };
-        return context.getFilesDir().listFiles(filter);
+        fileListCache = new ArrayList<>(Arrays.asList(context.getFilesDir().listFiles(filter)));
+        Collections.sort(fileListCache, Collections.<File>reverseOrder());
+    }
+
+    private static ArrayList<File> getFiles(Context context) {
+        if (fileListCache == null) {
+            refreshFileCache(context);
+        }
+        return fileListCache;
+    }
+
+    private static LocationLog loadFile(Context context, int id) {
+        try {
+            FileInputStream inputStream = new FileInputStream(getFiles(context).get(id));
+            InputStreamReader streamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(streamReader);
+            StringBuffer content = new StringBuffer();
+
+            String buffer = bufferedReader.readLine();
+            while (buffer != null) {
+                content.append(buffer);
+                buffer = bufferedReader.readLine();
+            }
+
+            Gson gson = new Gson();
+            return gson.fromJson(content.toString(), LocationLog.class);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static synchronized ArrayList<LocationLog> loadFiles(Context context, int start, int end) {
         end = Math.min(end, getFilesCount(context));
-        File[] files = getFiles(context);
         ArrayList<LocationLog> ret = new ArrayList<>();
         for (int i = start; i<end; i++) {
-            try {
-                FileInputStream inputStream = new FileInputStream(files[i]);
-                InputStreamReader streamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(streamReader);
-                StringBuffer content = new StringBuffer();
-
-                String buffer = bufferedReader.readLine();
-                while (buffer != null) {
-                    content.append(buffer);
-                    buffer = bufferedReader.readLine();
-                }
-
-                Gson gson = new Gson();
-                ret.add(gson.fromJson(content.toString(), LocationLog.class));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+            ret.add(loadFile(context, i));
         }
         return ret;
     }

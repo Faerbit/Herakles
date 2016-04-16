@@ -2,6 +2,9 @@ package it.faerb.herakles;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.text.Layout;
 import android.util.Log;
@@ -28,7 +31,7 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
         super.onCreate(savedInstanceState);
 
         ListAdapter adapter = new LocationLogAdapter(getContext(), R.layout.locationlog_list_item,
-                LocationLog.loadFiles(getContext(), 0, 20));
+                LocationLog.loadFiles(getContext(), 0, 1));
         this.setListAdapter(adapter);
     }
 
@@ -56,7 +59,8 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
 
     @Override
     public void onListItemClick(ListView list, View view, int position, long id) {
-
+        LocationLog.replaceCurrentLocationLog(getContext(), position);
+        ((MainActivity) getActivity()).transitionToTrackFragment();
     }
 
     @Override

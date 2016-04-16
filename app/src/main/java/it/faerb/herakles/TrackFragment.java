@@ -86,9 +86,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             }
         });
 
-        if (isRunning) {
-            refreshHandler.post(refresh);
-        }
+        refreshHandler.post(refresh);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
