@@ -5,16 +5,18 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 
-public class LocationLogAdapter  extends ArrayAdapter<LocationLog>{
+public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
 
-    static Context context;
-    static int layoutResourceId;
-    ArrayList<LocationLog> data = null;
+    private static Context context;
+    private static int layoutResourceId;
+    private ArrayList<LocationLog> data = null;
 
     public LocationLogAdapter(Context context, int layoutResourceId, ArrayList<LocationLog> data) {
         super(context, layoutResourceId, data.toArray(new LocationLog[data.size()]));
@@ -26,14 +28,15 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog>{
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
-        Holder holder = null;
+        Holder holder;
 
         if (row == null) {
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             row = inflater.inflate(layoutResourceId, parent, false);
             holder = new Holder();
-            holder.title = (TextView) row.findViewById(R.id.text_title);
-            holder.subtitle = (TextView) row.findViewById(R.id.text_subtitle);
+            holder.begin = (TextView) row.findViewById(R.id.text_begin);
+            holder.distance = (TextView) row.findViewById(R.id.text_distance);
+            holder.duration = (TextView) row.findViewById(R.id.text_duration);
 
             row.setTag(holder);
         }
@@ -42,14 +45,16 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog>{
         }
 
         LocationLog log = data.get(position);
-        holder.title.setText(log.getTitle());
-        holder.subtitle.setText(log.getSubtitle());
+        holder.begin.setText(DateFormat.getDateTimeInstance().format(log.getBegin()));
+        holder.distance.setText(Util.formatDistance(log.getDistance()));
+        holder.duration.setText(Util.formatDuration(log.getDuration()));
 
         return row;
     }
 
     static class Holder {
-        TextView title;
-        TextView subtitle;
+        TextView begin;
+        TextView distance;
+        TextView duration;
     }
 }

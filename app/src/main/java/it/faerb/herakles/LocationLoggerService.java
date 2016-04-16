@@ -52,7 +52,7 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
-        CurrentLocationLog.addLocation(loc);
+        LocationLog.addLocation(loc);
     }
 
     public void onProviderEnabled(String s) {

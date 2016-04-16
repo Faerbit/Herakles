@@ -3,10 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="10dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:id="@+id/locationlog_list_item">
 
     <TextView
-        android:id="@+id/text_title"
+        android:id="@+id/text_begin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItem"
@@ -14,10 +15,18 @@
         android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/text_subtitle"
+        android:id="@+id/text_distance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceListItem"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/text_title"/>
+        android:layout_below="@id/text_begin"/>
+
+    <TextView
+        android:id="@+id/text_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceListItem"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/text_begin"/>
 </RelativeLayout>

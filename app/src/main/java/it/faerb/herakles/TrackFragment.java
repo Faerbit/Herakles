@@ -30,19 +30,9 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link TrackFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link TrackFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class TrackFragment extends Fragment implements GpsStatus.Listener, LocationListener {
 
     static final String TAG = "Herakles.TrackFragment";
-
-    //private OnFragmentInteractionListener mListener;
 
     public TrackFragment() {
         // Required empty public constructor
@@ -86,7 +76,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                 Log.d(TAG, "Clicked start Button");
                 getActivity().startService(new Intent(v.getContext(), LocationLoggerService.class));
                 isRunning = true;
-                refreshHandler.postDelayed(refresh, 1000);
+                refreshHandler.post(refresh);
             }
         });
 
@@ -123,36 +113,20 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
 
     private void clearData() {
-        lastUpdateDistance = 0;
-        lastUpdateIndex = 1;
-        CurrentLocationLog.clear();
+        LocationLog.clear();
     }
 
-    private float lastUpdateDistance = 0;
-    private int lastUpdateIndex = 1;
 
     private final Runnable refresh = new Runnable() {
         @Override
         public void run() {
-            List<Location> locList = CurrentLocationLog.getLocationLog();
+            TextView timeView = (TextView) getView().findViewById(R.id.text_view_time);
+            assert timeView != null;
+            timeView.setText(Util.formatDuration(LocationLog.getCurrentLocationLog().getDuration()));
 
-            if (locList.size() > 1) {
-                long startTime = locList.get(0).getElapsedRealtimeNanos();
-                long elapsedNanos = SystemClock.elapsedRealtimeNanos() - startTime;
-                int elapsedSeconds = (int) (elapsedNanos / 1e9);
-                TextView timeView = (TextView) getView().findViewById(R.id.text_view_time);
-                assert timeView != null;
-                timeView.setText(Util.formatSeconds(elapsedSeconds));
-
-                for (int i = lastUpdateIndex; i < locList.size(); i++) {
-                    lastUpdateDistance += locList.get(i).distanceTo(locList.get(i - 1));
-                }
-                lastUpdateIndex = locList.size();
-
-                TextView distanceView = (TextView) getView().findViewById(R.id.text_view_distance);
-                assert distanceView != null;
-                distanceView.setText(Util.formatDistance(lastUpdateDistance));
-            }
+            TextView distanceView = (TextView) getView().findViewById(R.id.text_view_distance);
+            assert distanceView != null;
+            distanceView.setText(Util.formatDistance(LocationLog.getCurrentLocationLog().getDistance()));
 
             TrackFragment.this.refreshHandler.postDelayed(refresh, 1000);
         }
@@ -161,18 +135,11 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        /*if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }*/
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        //mListener = null;
     }
 
 
@@ -281,20 +248,5 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
         stopLocationUpdates();
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }

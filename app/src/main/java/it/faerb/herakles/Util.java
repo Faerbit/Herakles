@@ -2,10 +2,10 @@ package it.faerb.herakles;
 
 public class Util {
 
-    public static String formatSeconds(int pSeconds) {
-        int hours = pSeconds / 3600;
-        int minutes = pSeconds / 60 % 60;
-        int seconds = pSeconds % 60;
+    public static String formatDuration(long pSeconds) {
+        long hours = pSeconds / 3600;
+        long minutes = pSeconds / 60 % 60;
+        long seconds = pSeconds % 60;
 
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
