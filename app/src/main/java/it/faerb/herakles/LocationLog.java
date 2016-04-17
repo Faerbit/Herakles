@@ -88,11 +88,19 @@ public class LocationLog {
         getCurrentLocationLog().duration = 0;
     }
 
+    public static void deleteFile(Context context, int position) {
+        Log.d(TAG, String.format("deleteFile: %d", position));
+        File file = getFiles(context).get(position);
+        file.delete();
+        refreshFileCache(context);
+    }
+
     public static synchronized void save(Context context) {
         String filename = getCurrentLocationLog().getFilename();
         if (filename == "") {
             return;
         }
+        Log.d(TAG, String.format("save: file %s", filename));
         FileOutputStream outputStream;
         try {
             outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);

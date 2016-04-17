@@ -216,9 +216,13 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
     @Override
     public void onLocationChanged(Location loc) {
-        TextView textView = (TextView) getView().findViewById(R.id.text_view_gps_error);
-        if (textView != null) {
-            textView.setText(String.valueOf(loc.getAccuracy()) + " m");
+        // handle weird null pointer exception
+        View view = getView();
+        if (view != null) {
+            TextView textView = (TextView) view.findViewById(R.id.text_view_gps_error);
+            if (textView != null) {
+                textView.setText(String.valueOf(loc.getAccuracy()) + " m");
+            }
         }
     }
 

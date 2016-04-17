@@ -77,6 +77,7 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
             //Log.d(TAG, String.format("onScroll: loading %d - %d",totalItemCount, end));
             adapter.addAll(LocationLog.loadFiles(getContext(), totalItemCount, end));
             adapter.notifyDataSetChanged();
+            getListView().invalidateViews();
         }
     }
 }

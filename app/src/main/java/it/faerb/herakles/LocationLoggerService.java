@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -19,10 +20,10 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     final static String TAG = "Herakles.LocLogService";
 
-    private LocationManager locationManager;
-
     public LocationLoggerService() {
     }
+
+    private Handler saveHandler;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
@@ -35,8 +36,34 @@ public class LocationLoggerService extends Service implements LocationListener {
                 .build();
         subscribeToLocationUpdates();
         startForeground(1, notification);
+        saveHandler = new Handler();
+        saveHandler.postDelayed(save, 180000);
         return START_STICKY;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: ");
+        saveHandler.removeCallbacksAndMessages(null);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        locationManager.removeUpdates(this);
+    }
+
+    private Runnable save = new Runnable() {
+        @Override
+        public void run() {
+            LocationLog.save(getApplicationContext());
+            saveHandler.postDelayed(save, 180000);
+        }
+    };
 
 
     @Override
@@ -52,6 +79,7 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
+        Log.d(TAG, "onLocationChanged: adding location");
         LocationLog.addLocation(loc);
     }
 
@@ -66,7 +94,7 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     private void subscribeToLocationUpdates() {
         Log.d(TAG, "subscribeToLocationUpdates: begin");
-        this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this,
@@ -74,7 +102,7 @@ public class LocationLoggerService extends Service implements LocationListener {
                     != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         Log.d(TAG, "subscribeToLocationUpdates: requested");
     }
 

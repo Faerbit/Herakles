@@ -1,12 +1,16 @@
 package it.faerb.herakles;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -26,7 +30,7 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View row = convertView;
         Holder holder;
 
@@ -48,6 +52,27 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
         holder.begin.setText(DateFormat.getDateTimeInstance().format(log.getBegin()));
         holder.distance.setText(Util.formatDistance(log.getDistance()));
         holder.duration.setText(Util.formatDuration(log.getDuration()));
+
+        ImageButton delete_button = (ImageButton) row.findViewById(R.id.button_delete);
+        assert delete_button != null;
+        delete_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+                dialog.setTitle(R.string.delete_dialog_title);
+                dialog.setMessage(R.string.delete_dialog_text);
+                dialog.setNegativeButton(R.string.no, null);
+                dialog.setPositiveButton(R.string.yes, new AlertDialog.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        data.remove(position);
+                        LocationLog.deleteFile(context, position);
+                        notifyDataSetChanged();
+
+                    }});
+                dialog.show();
+            }
+        });
 
         return row;
     }
