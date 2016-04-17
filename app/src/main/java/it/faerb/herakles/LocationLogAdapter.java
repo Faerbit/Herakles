@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,14 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
         holder.begin.setText(DateFormat.getDateTimeInstance().format(log.getBegin()));
         holder.distance.setText(Util.formatDistance(log.getDistance()));
         holder.duration.setText(Util.formatDuration(log.getDuration()));
+
+        row.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                LocationLog.replaceCurrentLocationLog(getContext(), position);
+                ((MainActivity) view.getContext()).transitionToTrackFragment();
+            }
+        });
 
         ImageButton delete_button = (ImageButton) row.findViewById(R.id.button_delete);
         assert delete_button != null;
