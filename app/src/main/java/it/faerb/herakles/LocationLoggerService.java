@@ -2,6 +2,7 @@ package it.faerb.herakles;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -20,6 +21,8 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     final static String TAG = "Herakles.LocLogService";
 
+    private final static int ONGOING_NOTIFICATION = 1;
+
     public LocationLoggerService() {
     }
 
@@ -28,17 +31,27 @@ public class LocationLoggerService extends Service implements LocationListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
         Log.d(TAG, "onStartCommand");
-        Notification notification = new Notification.Builder(this)
-                .setContentTitle("Herakles running")
-                .setContentIntent(PendingIntent.getActivity(this, 0,
-                        new Intent(this, MainActivity.class), 0))
-                .setSmallIcon(getApplicationInfo().icon)
-                .build();
         subscribeToLocationUpdates();
-        startForeground(1, notification);
+        startForeground(ONGOING_NOTIFICATION, createNotification());
         saveHandler = new Handler();
         saveHandler.postDelayed(save, 180000);
         return START_STICKY;
+    }
+
+    private Notification createNotification() {
+        String notificationText;
+        notificationText = Util.formatDistance(LocationLog.getCurrentLocationLog().getDistance());
+        notificationText += " ";
+        notificationText += Util.formatDuration(LocationLog.getCurrentLocationLog().getDuration());
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle(getString(R.string.app_name) + " " +
+                        getString(R.string.notification_running))
+                .setContentIntent(PendingIntent.getActivity(this, 0,
+                        new Intent(this, MainActivity.class), 0))
+                .setSmallIcon(getApplicationInfo().icon)
+                .setContentText(notificationText)
+                .build();
+        return notification;
     }
 
     @Override
@@ -74,13 +87,15 @@ public class LocationLoggerService extends Service implements LocationListener {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate");
-
     }
 
     @Override
     public void onLocationChanged(Location loc) {
         Log.d(TAG, "onLocationChanged: adding location");
         LocationLog.addLocation(loc);
+        NotificationManager notificationManager = (NotificationManager) getApplicationContext()
+                .getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
+        notificationManager.notify(ONGOING_NOTIFICATION, createNotification());
     }
 
     public void onProviderEnabled(String s) {

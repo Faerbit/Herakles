@@ -20,6 +20,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="text_label_list_empty">No logs available</string>
+    <string name="notification_running">running</string>
     <string-array name="navigation_menu">
         <item>Track</item>
         <item>Log</item>
