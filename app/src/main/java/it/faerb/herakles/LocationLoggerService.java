@@ -44,12 +44,13 @@ public class LocationLoggerService extends Service implements LocationListener {
         notificationText += " ";
         notificationText += Util.formatDuration(LocationLog.getCurrentLocationLog().getDuration());
         Notification notification = new Notification.Builder(this)
+                .setSmallIcon(getApplicationInfo().icon)
+                .setColor(getColor(R.color.colorPrimary))
                 .setContentTitle(getString(R.string.app_name) + " " +
                         getString(R.string.notification_running))
+                .setContentText(notificationText)
                 .setContentIntent(PendingIntent.getActivity(this, 0,
                         new Intent(this, MainActivity.class), 0))
-                .setSmallIcon(getApplicationInfo().icon)
-                .setContentText(notificationText)
                 .build();
         return notification;
     }
