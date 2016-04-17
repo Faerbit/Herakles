@@ -25,3 +25,7 @@ SOFTWARE.
 
 Original (black) icon by Ivan Boyko:
 https://www.iconfinder.com/icons/310322/biceps_hand_sport_icon
+
+Licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+Changed color of icon to blue and imported it using Android Studio.
