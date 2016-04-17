@@ -67,6 +67,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
         assert startStopButton != null;
+        if (isRunning) {
+            startStopButton.setText(R.string.button_label_stop);
+        }
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
