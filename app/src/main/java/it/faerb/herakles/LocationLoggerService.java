@@ -35,7 +35,7 @@ public class LocationLoggerService extends Service implements LocationListener {
         subscribeToLocationUpdates();
         startForeground(ONGOING_NOTIFICATION_ID, createNotification());
         saveHandler = new Handler();
-        saveHandler.postDelayed(save, Util.Constants.SAVE_INTERVAL);
+        saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
         return START_STICKY;
     }
 
@@ -77,7 +77,7 @@ public class LocationLoggerService extends Service implements LocationListener {
         @Override
         public void run() {
             LocationLog.save(getApplicationContext());
-            saveHandler.postDelayed(save, Util.Constants.SAVE_INTERVAL);
+            saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
         }
     };
 
@@ -121,7 +121,7 @@ public class LocationLoggerService extends Service implements LocationListener {
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                Util.Constants.LOCATION_MIN_TIME, Util.Constants.LOCATION_MIN_DISTANCE, this);
+                Util.Config.LOCATION_MIN_TIME, Util.Config.LOCATION_MIN_DISTANCE, this);
         Log.d(TAG, "subscribeToLocationUpdates: requested");
     }
 

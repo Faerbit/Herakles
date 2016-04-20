@@ -2,10 +2,10 @@ package it.faerb.herakles;
 
 public class Util {
 
-    public static class Constants {
+    public static class Config {
         public static final float LOCATION_MIN_DISTANCE = 0;
         // Time values are in milliseconds
-        public static final int LOCATION_MIN_TIME = 2500;
+        public static final int LOCATION_MIN_TIME = 2000;
         public static final int SAVE_INTERVAL = 3 * 60 * 1000;
         public static final int REFRESH_INTERVAL = 1000;
     }

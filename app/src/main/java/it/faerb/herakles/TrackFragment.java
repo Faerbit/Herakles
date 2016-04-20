@@ -149,7 +149,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             distanceView.setText(Util.formatDistance(LocationLog
                     .getCurrentLocationLog().getDistance()));
 
-            TrackFragment.this.refreshHandler.postDelayed(refresh, Util.Constants.REFRESH_INTERVAL);
+            TrackFragment.this.refreshHandler.postDelayed(refresh, Util.Config.REFRESH_INTERVAL);
         }
     };
 
@@ -178,7 +178,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                Util.Constants.LOCATION_MIN_TIME, Util.Constants.LOCATION_MIN_DISTANCE, this);
+                Util.Config.LOCATION_MIN_TIME, Util.Config.LOCATION_MIN_DISTANCE, this);
         locationManager.addGpsStatusListener(this);
         locationOverlay.enableMyLocation();
     }
