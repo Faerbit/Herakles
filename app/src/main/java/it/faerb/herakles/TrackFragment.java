@@ -103,7 +103,8 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     }
 
     private void newButtonClick() {
-        LocationLog.save(getContext());
+        getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
+        getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
         clearData();
         refreshImmidiatly();
     }
