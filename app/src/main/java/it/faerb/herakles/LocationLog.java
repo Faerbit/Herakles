@@ -69,34 +69,22 @@ public class LocationLog {
             JsonObject jsonObject = json.getAsJsonObject();
 
             long time = jsonObject.get("time").getAsLong();
-            if (time != 0) {
-                location.setTime(time);
-            }
+            location.setTime(time);
 
             double latitude = jsonObject.get("latitude").getAsDouble();
-            if (latitude != 0) {
-                location.setLatitude(latitude);
-            }
+            location.setLatitude(latitude);
 
             double longitude = jsonObject.get("longitude").getAsDouble();
-            if (latitude != 0) {
-                location.setLongitude(longitude);
-            }
+            location.setLongitude(longitude);
 
             double altitude = jsonObject.get("altitude").getAsDouble();
-            if (altitude != 0) {
-                location.setAltitude(altitude);
-            }
+            location.setAltitude(altitude);
 
             float speed = jsonObject.get("speed").getAsFloat();
-            if (speed != 0) {
-                location.setSpeed(speed);
-            }
+            location.setSpeed(speed);
 
             float accuracy = jsonObject.get("accuracy").getAsFloat();
-            if (accuracy != 0) {
-                location.setAccuracy(accuracy);
-            }
+            location.setAccuracy(accuracy);
 
             return location;
         }
