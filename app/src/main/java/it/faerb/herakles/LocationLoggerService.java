@@ -69,6 +69,7 @@ public class LocationLoggerService extends Service implements LocationListener {
             return;
         }
         locationManager.removeUpdates(this);
+        LocationLog.save(getApplicationContext());
     }
 
     private Runnable save = new Runnable() {

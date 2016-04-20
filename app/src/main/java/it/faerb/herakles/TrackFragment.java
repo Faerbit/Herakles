@@ -105,6 +105,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private void newButtonClick() {
         LocationLog.save(getContext());
         clearData();
+        refreshImmidiatly();
     }
 
     private void startStopButtonClick(View view) {
@@ -118,9 +119,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             Log.d(TAG, "Clicked stop Button");
             getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
             isRunning = false;
-            LocationLog.save(getContext());
             ((Button) view).setText(getText(R.string.button_label_start));
         }
+        refreshImmidiatly();
     }
 
 
@@ -150,6 +151,11 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             TrackFragment.this.refreshHandler.postDelayed(refresh, Util.Constants.REFRESH_INTERVAL);
         }
     };
+
+    private void refreshImmidiatly() {
+        refreshHandler.removeCallbacksAndMessages(null);
+        refreshHandler.post(refresh);
+    }
 
     @Override
     public void onAttach(Context context) {
