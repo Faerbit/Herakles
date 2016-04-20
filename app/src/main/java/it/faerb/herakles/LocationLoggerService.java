@@ -28,15 +28,23 @@ public class LocationLoggerService extends Service implements LocationListener {
     }
 
     private Handler saveHandler;
+    private boolean running;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startID) {
-        Log.d(TAG, "onStartCommand");
-        subscribeToLocationUpdates();
-        startForeground(ONGOING_NOTIFICATION_ID, createNotification());
-        saveHandler = new Handler();
-        saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
-        return START_STICKY;
+        if (!running) {
+            Log.d(TAG, "onStartCommand");
+            subscribeToLocationUpdates();
+            startForeground(ONGOING_NOTIFICATION_ID, createNotification());
+            saveHandler = new Handler();
+            saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
+            running = true;
+            return START_STICKY;
+        }
+        else {
+            clearOnExit = intent.getBooleanExtra("clear", false);
+            return START_STICKY;
+        }
     }
 
     private Notification createNotification() {
@@ -56,6 +64,8 @@ public class LocationLoggerService extends Service implements LocationListener {
         return notification;
     }
 
+    private boolean clearOnExit = false;
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -71,6 +81,10 @@ public class LocationLoggerService extends Service implements LocationListener {
         }
         locationManager.removeUpdates(this);
         LocationLog.save(getApplicationContext());
+        Log.d(TAG, String.format("onDestroy: clearOnExit %b", clearOnExit));
+        if (clearOnExit) {
+            LocationLog.clear();
+        }
     }
 
     private Runnable save = new Runnable() {
@@ -80,7 +94,6 @@ public class LocationLoggerService extends Service implements LocationListener {
             saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
         }
     };
-
 
     @Override
     public IBinder onBind(Intent intent) {

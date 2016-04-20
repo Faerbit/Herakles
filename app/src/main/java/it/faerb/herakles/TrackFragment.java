@@ -67,9 +67,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
         assert startStopButton != null;
-        if (isRunning) {
-            startStopButton.setText(R.string.button_label_stop);
-        }
+        updateStartStopButtonText(startStopButton);
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -103,10 +101,29 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     }
 
     private void newButtonClick() {
-        getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
-        getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
-        clearData();
+        if (isRunning) {
+            Intent clearIntent = new Intent(getContext(), LocationLoggerService.class);
+            clearIntent.putExtra("clear", true);
+            getActivity().startService(clearIntent);
+            getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
+            isRunning = false;
+        }
+        updateStartStopButtonText();
         refreshImmidiatly();
+    }
+
+    private void updateStartStopButtonText() {
+        Button button = (Button) getView().findViewById(R.id.button_start_stop);
+        updateStartStopButtonText(button);
+    }
+
+    private void updateStartStopButtonText(Button button) {
+        if (isRunning) {
+            button.setText(getText(R.string.button_label_stop));
+        }
+        else {
+            button.setText(getText(R.string.button_label_start));
+        }
     }
 
     private void startStopButtonClick(View view) {
@@ -114,22 +131,15 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             Log.d(TAG, "Clicked start Button");
             getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
             isRunning = true;
-            ((Button) view).setText(getText(R.string.button_label_stop));
         }
         else {
             Log.d(TAG, "Clicked stop Button");
             getActivity().stopService(new Intent(getContext(), LocationLoggerService.class));
             isRunning = false;
-            ((Button) view).setText(getText(R.string.button_label_start));
         }
+        updateStartStopButtonText();
         refreshImmidiatly();
     }
-
-
-    private void clearData() {
-        LocationLog.clear();
-    }
-
 
     private final Runnable refresh = new Runnable() {
         @Override
