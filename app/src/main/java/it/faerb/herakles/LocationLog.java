@@ -32,6 +32,16 @@ import java.util.List;
 
 public class LocationLog {
 
+    // To prevent typos
+    private final static class FieldNames {
+        public static final String TIME = "time";
+        public static final String LATITUDE = "latitude";
+        public static final String LONGITUDE = "longitude";
+        public static final String ALTITUDE = "altitude";
+        public static final String SPEED = "speed";
+        public static final String ACCURACY = "accuracy";
+    }
+
     private static class LocationSerializer implements JsonSerializer<Location> {
 
         @Override
@@ -39,22 +49,22 @@ public class LocationLog {
                                      JsonSerializationContext context) {
             JsonObject jsonObject = new JsonObject();
             long time = src.getTime();
-            jsonObject.addProperty("time", time);
+            jsonObject.addProperty(FieldNames.TIME, time);
 
             double latitude = src.getLatitude();
-            jsonObject.addProperty("latitude", latitude);
+            jsonObject.addProperty(FieldNames.LATITUDE, latitude);
 
             double longitude = src.getLongitude();
-            jsonObject.addProperty("longitude", longitude);
+            jsonObject.addProperty(FieldNames.LONGITUDE, longitude);
 
             double altitude = src.getAltitude();
-            jsonObject.addProperty("altitude", altitude);
+            jsonObject.addProperty(FieldNames.ALTITUDE, altitude);
 
             float speed = src.getSpeed();
-            jsonObject.addProperty("speed", speed);
+            jsonObject.addProperty(FieldNames.SPEED, speed);
 
             float accuracy = src.getAccuracy();
-            jsonObject.addProperty("accuracy", accuracy);
+            jsonObject.addProperty(FieldNames.ACCURACY, accuracy);
 
             return jsonObject;
         }
@@ -68,22 +78,22 @@ public class LocationLog {
 
             JsonObject jsonObject = json.getAsJsonObject();
 
-            long time = jsonObject.get("time").getAsLong();
+            long time = jsonObject.get(FieldNames.TIME).getAsLong();
             location.setTime(time);
 
-            double latitude = jsonObject.get("latitude").getAsDouble();
+            double latitude = jsonObject.get(FieldNames.LATITUDE).getAsDouble();
             location.setLatitude(latitude);
 
-            double longitude = jsonObject.get("longitude").getAsDouble();
+            double longitude = jsonObject.get(FieldNames.LONGITUDE).getAsDouble();
             location.setLongitude(longitude);
 
-            double altitude = jsonObject.get("altitude").getAsDouble();
+            double altitude = jsonObject.get(FieldNames.ALTITUDE).getAsDouble();
             location.setAltitude(altitude);
 
-            float speed = jsonObject.get("speed").getAsFloat();
+            float speed = jsonObject.get(FieldNames.SPEED).getAsFloat();
             location.setSpeed(speed);
 
-            float accuracy = jsonObject.get("accuracy").getAsFloat();
+            float accuracy = jsonObject.get(FieldNames.ACCURACY).getAsFloat();
             location.setAccuracy(accuracy);
 
             return location;
