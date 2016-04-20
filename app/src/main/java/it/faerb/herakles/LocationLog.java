@@ -6,6 +6,14 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,6 +31,77 @@ import java.util.Date;
 import java.util.List;
 
 public class LocationLog {
+
+    // Custom location class which holds only the relevant data to reduce data file size
+    private static class LocationSerializer implements JsonSerializer<Location> {
+
+        @Override
+        public JsonElement serialize(Location src, Type typeOfSrc,
+                                     JsonSerializationContext context) {
+            JsonObject jsonObject = new JsonObject();
+            long time = src.getTime();
+            jsonObject.addProperty("time", time);
+
+            double latitude = src.getLatitude();
+            jsonObject.addProperty("latitude", latitude);
+
+            double longitude = src.getLongitude();
+            jsonObject.addProperty("longitude", longitude);
+
+            double altitude = src.getAltitude();
+            jsonObject.addProperty("altitude", altitude);
+
+            float speed = src.getSpeed();
+            jsonObject.addProperty("speed", speed);
+
+            float accuracy = src.getAccuracy();
+            jsonObject.addProperty("accuracy", accuracy);
+
+            return jsonObject;
+        }
+    }
+
+    private static class LocationDeserializer implements JsonDeserializer {
+        @Override
+        public Location deserialize(JsonElement json, Type type,
+                                    JsonDeserializationContext context) throws JsonParseException {
+            Location location = new Location("gps");
+
+            JsonObject jsonObject = json.getAsJsonObject();
+
+            long time = jsonObject.get("time").getAsLong();
+            if (time != 0) {
+                location.setTime(time);
+            }
+
+            double latitude = jsonObject.get("latitude").getAsDouble();
+            if (latitude != 0) {
+                location.setLatitude(latitude);
+            }
+
+            double longitude = jsonObject.get("longitude").getAsDouble();
+            if (latitude != 0) {
+                location.setLongitude(longitude);
+            }
+
+            double altitude = jsonObject.get("altitude").getAsDouble();
+            if (altitude != 0) {
+                location.setAltitude(altitude);
+            }
+
+            float speed = jsonObject.get("speed").getAsFloat();
+            if (speed != 0) {
+                location.setSpeed(speed);
+            }
+
+            float accuracy = jsonObject.get("accuracy").getAsFloat();
+            if (accuracy != 0) {
+                location.setAccuracy(accuracy);
+            }
+
+            return location;
+        }
+    }
 
     private static final String TAG = "Herakles.LocationLog";
 
@@ -99,7 +179,8 @@ public class LocationLog {
         FileOutputStream outputStream;
         try {
             outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().registerTypeAdapter(Location.class,
+                    new LocationSerializer()).create();
             outputStream.write(gson.toJson(getCurrentLocationLog()).getBytes());
         }
         catch (Exception e){
@@ -159,7 +240,8 @@ public class LocationLog {
                 buffer = bufferedReader.readLine();
             }
 
-            Gson gson = new Gson();
+            Gson gson = new GsonBuilder().registerTypeAdapter(Location.class,
+                    new LocationDeserializer()).create();
             return gson.fromJson(content.toString(), LocationLog.class);
         }
         catch (Exception e) {
