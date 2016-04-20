@@ -248,8 +248,12 @@ public class LocationLog {
     }
 
     public static synchronized ArrayList<LocationLog> loadFiles(Context context, int start, int end) {
+        //Log.d(TAG, String.format("loadFiles: start: %d end: %d", start, end));
         end = Math.min(end, getFilesCount(context));
         ArrayList<LocationLog> ret = new ArrayList<>();
+        if (end < start) {
+            return ret;
+        }
         for (int i = start; i<end; i++) {
             ret.add(loadFile(context, i));
         }
