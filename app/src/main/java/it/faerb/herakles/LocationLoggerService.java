@@ -21,7 +21,8 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     final static String TAG = "Herakles.LocLogService";
 
-    private final static int ONGOING_NOTIFICATION = 1;
+    // must not be 0 as per android docs
+    private final static int ONGOING_NOTIFICATION_ID = 1;
 
     public LocationLoggerService() {
     }
@@ -32,7 +33,7 @@ public class LocationLoggerService extends Service implements LocationListener {
     public int onStartCommand(Intent intent, int flags, int startID) {
         Log.d(TAG, "onStartCommand");
         subscribeToLocationUpdates();
-        startForeground(ONGOING_NOTIFICATION, createNotification());
+        startForeground(ONGOING_NOTIFICATION_ID, createNotification());
         saveHandler = new Handler();
         saveHandler.postDelayed(save, Util.Constants.SAVE_INTERVAL);
         return START_STICKY;
@@ -97,7 +98,7 @@ public class LocationLoggerService extends Service implements LocationListener {
         LocationLog.addLocation(loc);
         NotificationManager notificationManager = (NotificationManager) getApplicationContext()
                 .getSystemService(getApplicationContext().NOTIFICATION_SERVICE);
-        notificationManager.notify(ONGOING_NOTIFICATION, createNotification());
+        notificationManager.notify(ONGOING_NOTIFICATION_ID, createNotification());
     }
 
     public void onProviderEnabled(String s) {
