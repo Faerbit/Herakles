@@ -32,7 +32,6 @@ import java.util.List;
 
 public class LocationLog {
 
-    // Custom location class which holds only the relevant data to reduce data file size
     private static class LocationSerializer implements JsonSerializer<Location> {
 
         @Override

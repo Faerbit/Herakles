@@ -2,6 +2,14 @@ package it.faerb.herakles;
 
 public class Util {
 
+    public static class Constants {
+        public static final float LOCATION_MIN_DISTANCE = 0;
+        // Time values are in milliseconds
+        public static final int LOCATION_MIN_TIME = 2500;
+        public static final int SAVE_INTERVAL = 3 * 60 * 1000;
+        public static final int REFRESH_INTERVAL = 1000;
+    }
+
     public static String formatDuration(long pSeconds) {
         long hours = pSeconds / 3600;
         long minutes = pSeconds / 60 % 60;
