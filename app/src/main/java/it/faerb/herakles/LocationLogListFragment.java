@@ -26,7 +26,7 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
         super.onCreate(savedInstanceState);
 
         ListAdapter adapter = new LocationLogAdapter(getContext(), R.layout.locationlog_list_item,
-                LocationLog.loadFiles(getContext(), 0, 1));
+                LocationLog.loadMetaFiles(getContext(), 0, 1));
         this.setListAdapter(adapter);
     }
 
@@ -68,7 +68,7 @@ public class LocationLogListFragment extends ListFragment implements AbsListView
         }
         if(totalItemCount < LocationLog.getFilesCount(getContext())) {
             int end = totalItemCount + (noItemsFitScreen - visibleItemCount);
-            adapter.addAll(LocationLog.loadFiles(getContext(), totalItemCount, end));
+            adapter.addAll(LocationLog.loadMetaFiles(getContext(), totalItemCount, end));
             adapter.notifyDataSetChanged();
         }
     }

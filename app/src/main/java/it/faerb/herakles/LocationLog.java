@@ -5,6 +5,8 @@ import android.location.Location;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -100,6 +102,44 @@ public class LocationLog {
         }
     }
 
+    private @interface MetaData {
+        // Field tag only annotation
+    }
+
+    private static class OnlyMetaDataStrategy implements ExclusionStrategy {
+
+        public OnlyMetaDataStrategy() {}
+
+        @Override
+        public boolean shouldSkipClass(Class cls) {
+           return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes attr) {
+            return attr.getAnnotation(MetaData.class) == null;
+        }
+    }
+
+    private @interface Data {
+        // Field tag only annotation
+    }
+
+    private static class OnlyDataStrategy implements ExclusionStrategy {
+
+        public OnlyDataStrategy() {}
+
+        @Override
+        public boolean shouldSkipClass(Class cls) {
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes attr) {
+            return attr.getAnnotation(Data.class) == null;
+        }
+    }
+
     private static final String TAG = "Herakles.LocationLog";
 
     private static LocationLog currentLocationLog = null;
@@ -113,9 +153,10 @@ public class LocationLog {
         return currentLocationLog;
     }
 
-    private List<Location> locationLog;
-    private float distance = 0.0f;
-    private long duration = 0;
+    @Data private List<Location> locationLog;
+    @MetaData private float distance = 0.0f;
+    @MetaData private long duration = 0;
+    @MetaData private long begin = 0;
 
     private LocationLog() {
         locationLog = Collections.synchronizedList(new ArrayList<Location>());
@@ -123,6 +164,9 @@ public class LocationLog {
 
     public static synchronized void addLocation(Location loc) {
         getCurrentLocationLog().locationLog.add(loc);
+        if (getCurrentLocationLog().locationLog.size() == 1) {
+            getCurrentLocationLog().begin = loc.getTime();
+        }
         if (getCurrentLocationLog().locationLog.size() > 1) {
             Location lastLoc = getCurrentLocationLog().locationLog
                     .get(getCurrentLocationLog().locationLog.size() - 2);
@@ -133,7 +177,7 @@ public class LocationLog {
 
     public static synchronized void replaceCurrentLocationLog(Context context, int id) {
         Log.d(TAG, String.format("replaceCurrentLocationLog: before locs: %d", getCurrentLocationLog().locationLog.size()));
-        currentLocationLog = loadFile(context, id);
+        currentLocationLog = loadFiles(context, id);
         Log.d(TAG, String.format("replaceCurrentLocationLog: after locs: %d", getCurrentLocationLog().locationLog.size()));
     }
 
@@ -146,12 +190,7 @@ public class LocationLog {
     }
 
     public long getBegin() {
-        if (locationLog.size() == 0) {
-            return 0;
-        }
-        else {
-            return locationLog.get(0).getTime();
-        }
+        return begin;
     }
 
     public static synchronized void clear() {
@@ -161,8 +200,12 @@ public class LocationLog {
     }
 
     public static void deleteFile(Context context, int position) {
-        Log.d(TAG, String.format("deleteFile: %d", position));
-        File file = getFiles(context).get(position);
+        Log.d(TAG, String.format("deleteFile: position: %d", position));
+        File file = getDataFile(getFiles(context).get(position));
+        Log.d(TAG, String.format("deleteFile: name: %s", file.getName()));
+        file.delete();
+        file = getFiles(context).get(position);
+        Log.d(TAG, String.format("deleteFile: name: %s", file.getName()));
         file.delete();
         refreshFileCache(context);
     }
@@ -176,12 +219,26 @@ public class LocationLog {
         FileOutputStream outputStream;
         try {
             outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            Gson gson = new GsonBuilder().registerTypeAdapter(Location.class,
-                    new LocationSerializer()).create();
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Location.class, new LocationSerializer())
+                    .setExclusionStrategies(new OnlyDataStrategy())
+                    .create();
             outputStream.write(gson.toJson(getCurrentLocationLog()).getBytes());
         }
         catch (Exception e){
            e.printStackTrace();
+        }
+        filename = getCurrentLocationLog().getMetaFilename();
+        Log.d(TAG, String.format("save: file %s", filename));
+        try {
+            outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+            Gson gson = new GsonBuilder()
+                    .setExclusionStrategies(new OnlyMetaDataStrategy())
+                    .create();
+            outputStream.write(gson.toJson(getCurrentLocationLog()).getBytes());
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
         refreshFileCache(context);
     }
@@ -192,6 +249,16 @@ public class LocationLog {
             String ret = dateFormat.format(new Date(locationLog.get(0).getTime()));
             ret += ".loclog";
             return ret;
+        }
+        else {
+            return "";
+        }
+    }
+
+    private String getMetaFilename() {
+        String ret = getFilename();
+        if (ret != "") {
+            return ret + ".meta";
         }
         else {
             return "";
@@ -210,7 +277,7 @@ public class LocationLog {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return filename.endsWith(".loclog");
+                return filename.endsWith(".loclog.meta");
             }
         };
         fileListCache = new ArrayList<>(Arrays.asList(context.getFilesDir().listFiles(filter)));
@@ -224,7 +291,53 @@ public class LocationLog {
         return fileListCache;
     }
 
-    private static LocationLog loadFile(Context context, int id) {
+    private static File getDataFile(File file) {
+        String filename = file.getAbsolutePath();
+        filename = filename.substring(0, filename.length() - 5);
+        return new File(filename);
+    }
+
+    private static LocationLog loadFiles(Context context, int position) {
+        try {
+            FileInputStream inputStream = new FileInputStream(getFiles(context).get(position));
+            InputStreamReader streamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(streamReader);
+            StringBuffer metaContent = new StringBuffer();
+
+            String buffer = bufferedReader.readLine();
+            while (buffer != null) {
+                metaContent.append(buffer);
+                buffer = bufferedReader.readLine();
+            }
+
+            inputStream = new FileInputStream(getDataFile(getFiles(context).get(position)));
+            streamReader = new InputStreamReader(inputStream);
+            bufferedReader = new BufferedReader(streamReader);
+            StringBuffer dataContent = new StringBuffer();
+
+            buffer = bufferedReader.readLine();
+            while (buffer != null) {
+                dataContent.append(buffer);
+                buffer = bufferedReader.readLine();
+            }
+
+            // merge contents
+            StringBuffer content = metaContent.deleteCharAt(metaContent.length() - 1);
+            content.append(",");
+            content.append(dataContent.substring(1, dataContent.length()));
+
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(Location.class, new LocationDeserializer())
+                    .create();
+            return gson.fromJson(content.toString(), LocationLog.class);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static LocationLog loadMetaFile(Context context, int id) {
         try {
             FileInputStream inputStream = new FileInputStream(getFiles(context).get(id));
             InputStreamReader streamReader = new InputStreamReader(inputStream);
@@ -237,8 +350,7 @@ public class LocationLog {
                 buffer = bufferedReader.readLine();
             }
 
-            Gson gson = new GsonBuilder().registerTypeAdapter(Location.class,
-                    new LocationDeserializer()).create();
+            Gson gson = new Gson();
             return gson.fromJson(content.toString(), LocationLog.class);
         }
         catch (Exception e) {
@@ -247,7 +359,8 @@ public class LocationLog {
         return null;
     }
 
-    public static synchronized ArrayList<LocationLog> loadFiles(Context context, int start, int end) {
+    public static synchronized ArrayList<LocationLog> loadMetaFiles(Context context, int start,
+                                                                int end) {
         //Log.d(TAG, String.format("loadFiles: start: %d end: %d", start, end));
         end = Math.min(end, getFilesCount(context));
         ArrayList<LocationLog> ret = new ArrayList<>();
@@ -255,7 +368,7 @@ public class LocationLog {
             return ret;
         }
         for (int i = start; i<end; i++) {
-            ret.add(loadFile(context, i));
+            ret.add(loadMetaFile(context, i));
         }
         return ret;
     }
