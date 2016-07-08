@@ -34,10 +34,43 @@ def getVersionName = { ->
     }
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+def keystoreProperties = new Properties()
+
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+def renameApk(variant, defaultConfig) {
+    variant.outputs.each { output ->
+        def buildType = ""
+        def file = output.packageApplication.outputFile
+        if (file.name.contains("release")) {
+            buildType = "release"
+        }
+        else {
+            buildType = "debug"
+        }
+        def fileName = defaultConfig.applicationId + "-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + buildType + ".apk"
+        if (buildType == "release") {
+            output.packageApplication.outputFile = new File(rootDir, fileName)
+        }
+        else {
+            output.packageApplication.outputFile = new File(file.parent, fileName)
+        }
+    }
+}
+
 android {
+    signingConfigs {
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
-
     defaultConfig {
         applicationId "it.faerb.herakles"
         minSdkVersion 17
@@ -46,20 +79,28 @@ android {
         versionName getVersionName()
     }
     buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            manifestPlaceholders = [ applicationLabel:"@string/app_name"]
-        }
         debug {
             applicationIdSuffix ".debug"
-            manifestPlaceholders = [ applicationLabel:"@string/app_name_debug"]
+            manifestPlaceholders = [applicationLabel: "@string/app_name_debug"]
+            applicationVariants.all { variant ->
+                renameApk(variant, defaultConfig)
+            }
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [applicationLabel: "@string/app_name"]
+            signingConfig signingConfigs.release
+            applicationVariants.all { variant ->
+                renameApk(variant, defaultConfig)
+            }
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
