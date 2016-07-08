@@ -20,4 +20,11 @@
     <string name="button_label_new">Neu</string>
     <string name="nav_close">Schließe Navigation</string>
     <string name="nav_open">Öffne Navigation</string>
+    <string name="app_name_debug">Herakles Debug</string>
+    <string name="delete_dialog_text">Willst du das wirklich löschen?</string>
+    <string name="delete_dialog_title">Löschen?</string>
+    <string name="no">Nein</string>
+    <string name="notification_running">aktiv</string>
+    <string name="text_label_list_empty">Keine Protokolle vorhanden</string>
+    <string name="yes">Ja</string>
 </resources>
