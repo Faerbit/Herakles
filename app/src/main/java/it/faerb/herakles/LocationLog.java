@@ -245,7 +245,7 @@ public class LocationLog {
 
     private String getFilename() {
         if (locationLog.size() > 0) {
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss-SSSS");
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSSS");
             String ret = dateFormat.format(new Date(locationLog.get(0).getTime()));
             ret += ".loclog";
             return ret;

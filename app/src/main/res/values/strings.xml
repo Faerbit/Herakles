@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Herakles</string>
+    <string name="app_name_debug">Herakles Debug</string>
     <string name="button_label_start">Start</string>
     <string name="button_label_stop">Stop</string>
     <string name="button_label_new">New</string>
