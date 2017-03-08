@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
@@ -59,10 +61,12 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         View view = inflater.inflate(R.layout.fragment_track, container, false);
         MapView map = (MapView) view.findViewById(R.id.map);
         assert map != null;
-        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
+        Location lastKnown = getLastKnownLocation();
+        mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
@@ -298,5 +302,19 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
         stopLocationUpdates();
+    }
+
+    private Location getLastKnownLocation() {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+        LocationManager lm = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+        Criteria crit = new Criteria();
+        crit.setAccuracy(Criteria.ACCURACY_FINE);
+        return lm.getLastKnownLocation(lm.getBestProvider(crit, true));
     }
 }
