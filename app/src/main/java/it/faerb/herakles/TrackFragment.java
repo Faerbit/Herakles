@@ -24,6 +24,7 @@ import android.widget.TextView;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 
@@ -61,7 +62,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
-        locationOverlay = new MyLocationNewOverlay(getContext(), map);
+        locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
 
@@ -109,7 +110,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             isRunning = false;
         }
         updateStartStopButtonText();
-        refreshImmidiatly();
+        refreshImmediately();
     }
 
     private void updateStartStopButtonText() {
@@ -138,7 +139,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             isRunning = false;
         }
         updateStartStopButtonText();
-        refreshImmidiatly();
+        refreshImmediately();
     }
 
     private final Runnable refresh = new Runnable() {
@@ -163,7 +164,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         }
     };
 
-    private void refreshImmidiatly() {
+    private void refreshImmediately() {
         refreshHandler.removeCallbacksAndMessages(null);
         refreshHandler.post(refresh);
     }
