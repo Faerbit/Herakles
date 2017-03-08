@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -212,14 +213,20 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         switch (event) {
             case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
                 updateGpsInfo();
+                break;
             case GpsStatus.GPS_EVENT_FIRST_FIX:
                 ImageView imageView = (ImageView) getView().findViewById(R.id.image_view_gps);
                 assert imageView != null;
                 imageView.setImageResource(R.drawable.ic_gps_fixed_24dp);
+                break;
         }
     }
 
     private void updateGpsInfo() {
+        if (ContextCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         int totalSatellites = 0;
         int satellitesInFix = 0;
         for (GpsSatellite satellite: locationManager.getGpsStatus(null).getSatellites()) {
