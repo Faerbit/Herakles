@@ -20,7 +20,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import org.osmdroid.api.IMapController;
@@ -59,17 +62,33 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_track, container, false);
+
+        // setup map
         MapView map = (MapView) view.findViewById(R.id.map);
         assert map != null;
         map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
+
+        // set center to last known location
         Location lastKnown = getLastKnownLocation();
         mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
+
+        // setup buttons
+
+        final ImageButton zoomToMeButton = (ImageButton) view.findViewById(R.id.button_zoom_to_me);
+        assert zoomToMeButton != null;
+        zoomToMeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                locationOverlay.enableFollowLocation();
+                Log.d(TAG, "clicked zoom to me button");
+            }
+        });
 
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
         assert startStopButton != null;
@@ -89,6 +108,8 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                 newButtonClick();
             }
         });
+
+        // handle gps status display
 
         refreshHandler.post(refresh);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
