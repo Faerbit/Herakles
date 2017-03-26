@@ -18,6 +18,9 @@ class MapListener implements org.osmdroid.events.MapListener {
     @Override
     public boolean onScroll(final ScrollEvent event) {
         Log.d(TAG, "onScroll");
+        if (trackFragment.getMyLocation() == null) {
+            return false;
+        }
         final float centerLat = Math.round(
                 event.getSource().getMapCenter().getLatitude() * 1000.0f) / 1000.0f;
         final float centerLong = Math.round(
@@ -29,7 +32,7 @@ class MapListener implements org.osmdroid.events.MapListener {
         if (centerLat != myLocLat && centerLong != myLocLong) {
             trackFragment.showZoomToMeButton();
         }
-        return false;
+        return true;
     }
 
     @Override
