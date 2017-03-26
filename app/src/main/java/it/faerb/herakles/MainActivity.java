@@ -67,9 +67,7 @@ public class MainActivity extends AppCompatActivity  {
 
         String[] titles = getResources().getStringArray(R.array.navigation_menu);
         final DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        assert  drawerLayout != null;
         ListView navDrawer = (ListView) findViewById(R.id.nav_drawer);
-        assert navDrawer != null;
         navDrawer.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, titles));
         navDrawer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -120,7 +118,6 @@ public class MainActivity extends AppCompatActivity  {
 
     public void transitionToTrackFragment() {
         ListView navDrawer = (ListView) findViewById(R.id.nav_drawer);
-        assert navDrawer != null;
         navDrawer.setItemChecked(0, true);
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frame_layout_content,

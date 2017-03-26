@@ -65,7 +65,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         // setup map
         MapView map = (MapView) view.findViewById(R.id.map);
-        assert map != null;
         map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         map.setMultiTouchControls(true);
         final IMapController mapController = map.getController();
@@ -81,7 +80,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         // setup buttons
 
         final ImageButton zoomToMeButton = (ImageButton) view.findViewById(R.id.button_zoom_to_me);
-        assert zoomToMeButton != null;
         zoomToMeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,7 +89,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         });
 
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
-        assert startStopButton != null;
         updateStartStopButtonText(startStopButton);
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -101,7 +98,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         });
 
         final Button newButton = (Button) view.findViewById(R.id.button_new);
-        assert newButton != null;
         newButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -116,12 +112,10 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             ImageView imageView = (ImageView) view.findViewById(R.id.image_view_gps);
-            assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_searching_24dp);
             startLocationUpdates();
         } else {
             ImageView imageView = (ImageView) view.findViewById(R.id.image_view_gps);
-            assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
         }
         return view;
@@ -172,7 +166,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         @Override
         public void run() {
             TextView timeView = (TextView) getView().findViewById(R.id.text_view_time);
-            assert timeView != null;
             if (isRunning) {
                 timeView.setText(Util.formatDuration(LocationLog.getElapsedSeconds()));
             }
@@ -182,7 +175,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             }
 
             TextView distanceView = (TextView) getView().findViewById(R.id.text_view_distance);
-            assert distanceView != null;
             distanceView.setText(Util.formatDistance(LocationLog
                     .getCurrentLocationLog().getDistance()));
 
@@ -241,7 +233,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                 break;
             case GpsStatus.GPS_EVENT_FIRST_FIX:
                 ImageView imageView = (ImageView) getView().findViewById(R.id.image_view_gps);
-                assert imageView != null;
                 imageView.setImageResource(R.drawable.ic_gps_fixed_24dp);
                 break;
         }
@@ -261,7 +252,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             totalSatellites++;
         }
         TextView textView = (TextView) getView().findViewById(R.id.text_view_satellites);
-        assert textView != null;
         textView.setText(satellitesInFix + "/" + totalSatellites);
     }
 
@@ -285,7 +275,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         Log.d(TAG, String.format("onProviderEnabled: Provider : %s", string));
         if (LocationManager.GPS_PROVIDER.equals(string)) {
             ImageView imageView = (ImageView) getView().findViewById(R.id.image_view_gps);
-            assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_searching_24dp);
         }
         startLocationUpdates();
@@ -295,15 +284,12 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     public void onProviderDisabled(String string) {
         if (LocationManager.GPS_PROVIDER.equals(string)) {
             ImageView imageView = (ImageView) getView().findViewById(R.id.image_view_gps);
-            assert imageView != null;
             imageView.setImageResource(R.drawable.ic_location_disabled_24dp);
 
             TextView textView = (TextView) getView().findViewById(R.id.text_view_satellites);
-            assert textView != null;
             textView.setText("0/0");
 
             textView = (TextView) getView().findViewById(R.id.text_view_gps_error);
-            assert textView != null;
             textView.setText("0 m");
         }
     }
