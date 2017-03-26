@@ -76,7 +76,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         // set center to last known location
         Location lastKnown = getLastKnownLocation();
-        mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
+        if (lastKnown != null) {
+            mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
+        }
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
