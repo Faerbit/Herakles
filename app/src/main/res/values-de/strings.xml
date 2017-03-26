@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Herakles - Sports Activity Tracking App for Android
+  ~ Copyright (c) 2017 Fabian Klemp
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program. If not, see <http://www.gnu.org/licenses/>.
+  -->
+
 <resources>
     <string name="app_name">Herakles</string>
     <string name="button_label_start">Start</string>
