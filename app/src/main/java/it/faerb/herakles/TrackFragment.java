@@ -19,14 +19,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -67,6 +68,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         MapView map = (MapView) view.findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         map.setMultiTouchControls(true);
+        MapListener mapListener = new MapListener(this);
+        DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener, 500);
+        map.setMapListener(delayedMapListener);
         final IMapController mapController = map.getController();
         mapController.setZoom(15);
 
@@ -78,15 +82,16 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         locationOverlay.enableFollowLocation();
 
         // setup buttons
-
         final ImageButton zoomToMeButton = (ImageButton) view.findViewById(R.id.button_zoom_to_me);
         zoomToMeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 locationOverlay.enableFollowLocation();
                 Log.d(TAG, "clicked zoom to me button");
+                hideZoomToMeButton();
             }
         });
+        zoomToMeButton.setVisibility(View.GONE);
 
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
         updateStartStopButtonText(startStopButton);
@@ -323,5 +328,75 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         Criteria crit = new Criteria();
         crit.setAccuracy(Criteria.ACCURACY_FINE);
         return lm.getLastKnownLocation(lm.getBestProvider(crit, true));
+    }
+
+    // prevent multiple animation
+    private boolean zoomToMeButtonVisible = false;
+
+    void hideZoomToMeButton() {
+        if (zoomToMeButtonVisible == false) {
+            return;
+        }
+        zoomToMeButtonVisible = false;
+        final ImageButton zoomToMeButton =
+                (ImageButton) getView().findViewById(R.id.button_zoom_to_me);
+        AlphaAnimation animation = new AlphaAnimation(1.0f, 0.0f);
+        animation.setDuration(1000);
+        animation.setRepeatCount(0);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                zoomToMeButton.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        zoomToMeButton.startAnimation(animation);
+        Log.d(TAG, "started hide zoom button animation");
+    }
+
+    void showZoomToMeButton() {
+        if (zoomToMeButtonVisible == true) {
+            return;
+        }
+        zoomToMeButtonVisible = true;
+        final ImageButton zoomToMeButton =
+                (ImageButton) getView().findViewById(R.id.button_zoom_to_me);
+        AlphaAnimation animation = new AlphaAnimation(0.0f, 1.0f);
+        animation.setDuration(500);
+        animation.setRepeatCount(0);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+               zoomToMeButton.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        zoomToMeButton.startAnimation(animation);
+        Log.d(TAG, "started show zoom button animation");
+    }
+
+    GeoPoint getMyLocation() {
+        if (locationOverlay != null) {
+            return locationOverlay.getMyLocation();
+        }
+        return null;
     }
 }
