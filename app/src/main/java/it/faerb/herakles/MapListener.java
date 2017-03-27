@@ -39,12 +39,18 @@ class MapListener implements org.osmdroid.events.MapListener {
                 trackFragment.getMyLocation().getLongitude() * 1000.0f) / 1000.0f;
         if (centerLat != myLocLat && centerLong != myLocLong) {
             trackFragment.showZoomToMeButton();
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
     public boolean onZoom(final ZoomEvent event) {
+        Log.d(TAG, "onZoom");
+        if (event.getZoomLevel() != 16) {
+            trackFragment.showZoomToMeButton();
+            return true;
+        }
         return false;
     }
 }
