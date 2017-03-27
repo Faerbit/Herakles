@@ -204,14 +204,15 @@ public class LocationLog {
     private int locationsReturnedIndex = 0;
 
     public static synchronized List<Location> getNewLocations() {
-        List<Location> ret = getNewLocations(getCurrentLocationLog().locationsReturnedIndex);
+        List<Location> ret = getCurrentLocationLog().locationLog.subList(
+                getCurrentLocationLog().locationsReturnedIndex,
+                getCurrentLocationLog().locationLog.size());
         getCurrentLocationLog().locationsReturnedIndex = getCurrentLocationLog().locationLog.size();
         return ret;
     }
 
-    public static synchronized List<Location> getNewLocations(int startIndex) {
-        return getCurrentLocationLog().locationLog.subList(
-                startIndex,
+    public static synchronized List<Location> getLocations() {
+        return getCurrentLocationLog().locationLog.subList(0,
                 getCurrentLocationLog().locationLog.size());
     }
 

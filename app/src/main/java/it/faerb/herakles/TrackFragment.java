@@ -97,7 +97,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
         polylineOverlay = new Polyline();
         polylineOverlay.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
-        for (Location loc : LocationLog.getNewLocations(0)) {
+        for (Location loc : LocationLog.getLocations()) {
             polylinePoints.add(new GeoPoint(loc));
         }
         polylineOverlay.setPoints(polylinePoints);
