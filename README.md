@@ -1,7 +1,7 @@
-#Herakles
+# Herakles
 
-This will eventually be a sports activity tracking app for Android.
+This is sports activity tracking app for Android.
 
-##License
+## License
 
-This work is licensed under the MIT License. See LICENSE.md for details.
+This work is licensed under the GPLv3 License. See LICENSE.md for details.
