@@ -49,6 +49,10 @@ class MapListener implements org.osmdroid.events.MapListener {
     @Override
     public boolean onZoom(final ZoomEvent event) {
         Log.d(TAG, "onZoom");
+        // do not show button when the current location is unknown
+        if (trackFragment.getMyLocation() == null) {
+            return false;
+        }
         if (event.getZoomLevel() != DEFAULT_ZOOM_LEVEL) {
             trackFragment.showZoomToMeButton();
             return true;

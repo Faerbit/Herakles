@@ -113,7 +113,10 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         zoomToMeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mapController.animateTo(locationOverlay.getMyLocation());
+                GeoPoint loc = locationOverlay.getMyLocation();
+                if (loc != null) {
+                    mapController.animateTo(loc);
+                }
                 mapController.zoomTo(DEFAULT_ZOOM_LEVEL);
                 locationOverlay.enableFollowLocation();
                 Log.d(TAG, "clicked zoom to me button");
