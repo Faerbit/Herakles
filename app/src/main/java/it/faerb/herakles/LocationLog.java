@@ -212,6 +212,7 @@ public class LocationLog {
     }
 
     public static synchronized List<Location> getLocations() {
+        getCurrentLocationLog().locationsReturnedIndex = getCurrentLocationLog().locationLog.size();
         return getCurrentLocationLog().locationLog.subList(0,
                 getCurrentLocationLog().locationLog.size());
     }

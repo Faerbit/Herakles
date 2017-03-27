@@ -115,7 +115,7 @@ public class LocationLoggerService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
-        Log.d(TAG, "onLocationChanged: adding location");
+        Log.d(TAG, "onLocationChanged: adding location " + loc);
         LocationLog.addLocation(loc);
         NotificationManager notificationManager = (NotificationManager) getApplicationContext()
                 .getSystemService(getApplicationContext().NOTIFICATION_SERVICE);

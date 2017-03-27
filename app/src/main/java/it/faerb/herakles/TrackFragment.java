@@ -18,6 +18,7 @@ import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -44,8 +45,13 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
+import static it.faerb.herakles.Util.Config.LOCATION_MIN_TIME;
+import static it.faerb.herakles.Util.Config.MAX_CONCURRENT_GEOPOINTS;
+import static it.faerb.herakles.Util.Config.OPTIMIZE_INTERVAL;
+import static it.faerb.herakles.Util.Config.SAVE_INTERVAL;
 
 
 public class TrackFragment extends Fragment implements GpsStatus.Listener, LocationListener {
@@ -62,6 +68,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
 
 
     private Handler refreshHandler = new Handler();
+    private Handler optimizeHandler = new Handler();
     private static Boolean isRunning = false;
     private LocationManager locationManager;
     private MyLocationNewOverlay locationOverlay;
@@ -92,15 +99,12 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         // set center to last known location
         Location lastKnown = getLastKnownLocation();
         if (lastKnown != null) {
-            mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
+            mapController.setCenter(new GeoPoint(lastKnown));
         }
 
         polylineOverlay = new Polyline();
         polylineOverlay.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
-        for (Location loc : LocationLog.getLocations()) {
-            polylinePoints.add(new GeoPoint(loc));
-        }
-        polylineOverlay.setPoints(polylinePoints);
+        optimizeHandler.post(optimizePoints);
         map.getOverlays().add(polylineOverlay);
 
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
@@ -440,5 +444,39 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             return locationOverlay.getMyLocation();
         }
         return null;
+    }
+
+    private final Runnable optimizePoints = new Runnable() {
+        @Override
+        public void run() {
+            new PointOptimizer().execute(LocationLog.getCurrentLocationLog().getLocations());
+        }
+    };
+
+    private class PointOptimizer extends AsyncTask<List<Location>, Void, ArrayList<GeoPoint>> {
+
+        @Override
+        protected ArrayList<GeoPoint> doInBackground(List<Location>... lists) {
+            List<Location> list = lists[0];
+            // compute how many points are acceptable until next optimization
+            final int ACCEPTABLE_POINT_COUNT = MAX_CONCURRENT_GEOPOINTS -
+                    (OPTIMIZE_INTERVAL/LOCATION_MIN_TIME);
+            final int SKIP_POINTS = (int) Math.ceil((float)list.size()/ACCEPTABLE_POINT_COUNT);
+            ArrayList<GeoPoint> ret = new ArrayList<>();
+            for(int i = 0; i<list.size(); i++) {
+                if (i % SKIP_POINTS == 0) {
+                    ret.add(new GeoPoint(list.get(i)));
+                }
+            }
+            Log.d(TAG, "optimized to: " + ret.size());
+            return ret;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<GeoPoint> list) {
+            polylinePoints = list;
+            polylineOverlay.setPoints(polylinePoints);
+            optimizeHandler.postDelayed(optimizePoints, OPTIMIZE_INTERVAL);
+        }
     }
 }
