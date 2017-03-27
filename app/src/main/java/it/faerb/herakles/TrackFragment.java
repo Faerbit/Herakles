@@ -130,7 +130,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         startStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startStopButtonClick(view);
+                startStopButtonClick();
             }
         });
 
@@ -183,7 +183,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         }
     }
 
-    private void startStopButtonClick(View view) {
+    private void startStopButtonClick() {
         if (!isRunning) {
             Log.d(TAG, "Clicked start Button");
             getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
