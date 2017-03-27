@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity  {
                     Toast.makeText(this,
                             getResources().getString(R.string.permission_response_storage) +
                                     "\n" + getResources().getString(R.string.permission_response_location),
-                            Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_LONG).show();
                 }
             }
             break;

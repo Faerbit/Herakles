@@ -201,6 +201,20 @@ public class LocationLog {
         return begin;
     }
 
+    private int locationsReturnedIndex = 0;
+
+    public static synchronized List<Location> getNewLocations() {
+        List<Location> ret = getNewLocations(getCurrentLocationLog().locationsReturnedIndex);
+        getCurrentLocationLog().locationsReturnedIndex = getCurrentLocationLog().locationLog.size();
+        return ret;
+    }
+
+    public static synchronized List<Location> getNewLocations(int startIndex) {
+        return getCurrentLocationLog().locationLog.subList(
+                startIndex,
+                getCurrentLocationLog().locationLog.size());
+    }
+
     public static synchronized void clear() {
         getCurrentLocationLog().locationLog.clear();
         getCurrentLocationLog().distance = 0.0f;

@@ -39,8 +39,11 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+
+import java.util.ArrayList;
 
 import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
 
@@ -62,6 +65,8 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private static Boolean isRunning = false;
     private LocationManager locationManager;
     private MyLocationNewOverlay locationOverlay;
+    private Polyline polylineOverlay;
+    private ArrayList<GeoPoint> polylinePoints = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,9 +94,19 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         if (lastKnown != null) {
             mapController.setCenter(new GeoPoint(lastKnown.getLatitude(), lastKnown.getLongitude()));
         }
+
+        polylineOverlay = new Polyline();
+        polylineOverlay.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
+        for (Location loc : LocationLog.getNewLocations(0)) {
+            polylinePoints.add(new GeoPoint(loc));
+        }
+        polylineOverlay.setPoints(polylinePoints);
+        map.getOverlays().add(polylineOverlay);
+
         locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
         map.getOverlays().add(locationOverlay);
         locationOverlay.enableFollowLocation();
+
 
         // setup buttons
         final ImageButton zoomToMeButton = (ImageButton) view.findViewById(R.id.button_zoom_to_me);
@@ -183,6 +198,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private final Runnable refresh = new Runnable() {
         @Override
         public void run() {
+            // update time
             TextView timeView = (TextView) getView().findViewById(R.id.text_view_time);
             if (isRunning) {
                 timeView.setText(Util.formatDuration(LocationLog.getElapsedSeconds()));
@@ -192,10 +208,20 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                         .getCurrentLocationLog().getDuration()));
             }
 
+            // update distance
             TextView distanceView = (TextView) getView().findViewById(R.id.text_view_distance);
             distanceView.setText(Util.formatDistance(LocationLog
                     .getCurrentLocationLog().getDistance()));
 
+            // update polyline
+            if (isRunning) {
+                for (Location loc : LocationLog.getNewLocations()) {
+                    polylinePoints.add(new GeoPoint(loc));
+                }
+                polylineOverlay.setPoints(polylinePoints);
+            }
+
+            // schedule next refresh
             TrackFragment.this.refreshHandler.postDelayed(refresh, Util.Config.REFRESH_INTERVAL);
         }
     };
@@ -343,7 +369,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         return lm.getLastKnownLocation(lm.getBestProvider(crit, true));
     }
 
-    // prevent multiple animation
+    // prevent multiple button animations
     private boolean zoomToMeButtonVisible = false;
 
     void hideZoomToMeButton() {
