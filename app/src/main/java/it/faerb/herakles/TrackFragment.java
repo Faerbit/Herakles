@@ -42,6 +42,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
+
 
 public class TrackFragment extends Fragment implements GpsStatus.Listener, LocationListener {
 
@@ -80,7 +82,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener, 500);
         map.setMapListener(delayedMapListener);
         final IMapController mapController = map.getController();
-        mapController.setZoom(16);
+        mapController.setZoom(DEFAULT_ZOOM_LEVEL);
 
         // set center to last known location
         Location lastKnown = getLastKnownLocation();
@@ -97,7 +99,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             @Override
             public void onClick(View view) {
                 mapController.animateTo(locationOverlay.getMyLocation());
-                mapController.zoomTo(16);
+                mapController.zoomTo(DEFAULT_ZOOM_LEVEL);
                 locationOverlay.enableFollowLocation();
                 Log.d(TAG, "clicked zoom to me button");
                 hideZoomToMeButton();
@@ -123,7 +125,6 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         });
 
         // handle gps status display
-
         refreshHandler.post(refresh);
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 

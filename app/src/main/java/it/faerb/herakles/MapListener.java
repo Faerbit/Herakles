@@ -13,6 +13,8 @@ import android.util.Log;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 
+import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
+
 class MapListener implements org.osmdroid.events.MapListener {
 
     private static final String TAG = "Herakles.MapListener";
@@ -47,7 +49,7 @@ class MapListener implements org.osmdroid.events.MapListener {
     @Override
     public boolean onZoom(final ZoomEvent event) {
         Log.d(TAG, "onZoom");
-        if (event.getZoomLevel() != 16) {
+        if (event.getZoomLevel() != DEFAULT_ZOOM_LEVEL) {
             trackFragment.showZoomToMeButton();
             return true;
         }

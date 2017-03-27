@@ -16,6 +16,7 @@ public class Util {
         public static final int LOCATION_MIN_TIME = 2000;
         public static final int SAVE_INTERVAL = 3 * 60 * 1000;
         public static final int REFRESH_INTERVAL = 1000;
+        public static final int DEFAULT_ZOOM_LEVEL = 16;
     }
 
     public static String formatDuration(long pSeconds) {
