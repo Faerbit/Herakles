@@ -80,7 +80,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener, 500);
         map.setMapListener(delayedMapListener);
         final IMapController mapController = map.getController();
-        mapController.setZoom(15);
+        mapController.setZoom(16);
 
         // set center to last known location
         Location lastKnown = getLastKnownLocation();
@@ -96,6 +96,8 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         zoomToMeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mapController.animateTo(locationOverlay.getMyLocation());
+                mapController.zoomTo(16);
                 locationOverlay.enableFollowLocation();
                 Log.d(TAG, "clicked zoom to me button");
                 hideZoomToMeButton();
