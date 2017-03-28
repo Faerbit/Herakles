@@ -463,12 +463,10 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
                     (OPTIMIZE_INTERVAL/LOCATION_MIN_TIME);
             final int SKIP_POINTS = (int) Math.ceil((float)list.size()/ACCEPTABLE_POINT_COUNT);
             ArrayList<GeoPoint> ret = new ArrayList<>();
-            for(int i = 0; i<list.size(); i++) {
-                if (i % SKIP_POINTS == 0) {
-                    ret.add(new GeoPoint(list.get(i)));
-                }
+            for(int i = 0; i<list.size(); i+=SKIP_POINTS) {
+                ret.add(new GeoPoint(list.get(i)));
             }
-            Log.d(TAG, "optimized to: " + ret.size());
+            Log.d(TAG, String.format("optimized from: %d to: %d", list.size(), ret.size()));
             return ret;
         }
 
