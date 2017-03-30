@@ -49,9 +49,9 @@ import java.util.List;
 
 import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
 import static it.faerb.herakles.Util.Config.LOCATION_MIN_TIME;
+import static it.faerb.herakles.Util.Config.MAP_EVENT_AGGREGATION_DURATION;
 import static it.faerb.herakles.Util.Config.MAX_CONCURRENT_GEOPOINTS;
 import static it.faerb.herakles.Util.Config.OPTIMIZE_INTERVAL;
-import static it.faerb.herakles.Util.Config.SAVE_INTERVAL;
 
 
 public class TrackFragment extends Fragment implements GpsStatus.Listener, LocationListener {
@@ -91,7 +91,8 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
         map.setMultiTouchControls(true);
         MapListener mapListener = new MapListener(this);
-        DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener, 500);
+        DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener,
+                MAP_EVENT_AGGREGATION_DURATION);
         map.setMapListener(delayedMapListener);
         final IMapController mapController = map.getController();
         mapController.setZoom(DEFAULT_ZOOM_LEVEL);

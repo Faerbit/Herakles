@@ -17,6 +17,7 @@ public class Util {
         public static final int SAVE_INTERVAL = 3 * 60 * 1000;
         public static final int OPTIMIZE_INTERVAL = 60 * 1000;
         public static final int REFRESH_INTERVAL = 1000;
+        public static final int MAP_EVENT_AGGREGATION_DURATION = 500;
         public static final int DEFAULT_ZOOM_LEVEL = 16;
         public static final int MAX_CONCURRENT_GEOPOINTS = 350;
     }
