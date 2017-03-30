@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity  {
                 R.string.nav_open,  // "open drawer" description for accessibility
                 R.string.nav_close  //"close drawer" description for accessibility
         );
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
         drawerToggle.syncState();
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frame_layout_content,
