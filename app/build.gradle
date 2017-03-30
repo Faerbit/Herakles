@@ -54,15 +54,13 @@ def renameApk(variant, defaultConfig) {
         def file = output.packageApplication.outputFile
         if (file.name.contains("release")) {
             buildType = "release"
-        }
-        else {
+        } else {
             buildType = "debug"
         }
         def fileName = defaultConfig.applicationId + "-" + defaultConfig.versionName + "-" + defaultConfig.versionCode + "-" + buildType + ".apk"
         if (buildType == "release") {
             output.packageApplication.outputFile = new File(rootDir, fileName)
-        }
-        else {
+        } else {
             output.packageApplication.outputFile = new File(file.parent, fileName)
         }
     }
@@ -112,11 +110,11 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
     compile 'org.osmdroid:osmdroid-android:5.6.4'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.google.code.gson:gson:2.7'
+    testCompile 'junit:junit:4.12'
 }

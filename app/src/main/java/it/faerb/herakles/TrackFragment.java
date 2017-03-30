@@ -12,7 +12,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.GpsSatellite;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -23,34 +22,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.osmdroid.api.IMapController;
-import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static it.faerb.herakles.Util.Config.DEFAULT_ZOOM_LEVEL;
-import static it.faerb.herakles.Util.Config.LOCATION_MIN_TIME;
-import static it.faerb.herakles.Util.Config.MAP_EVENT_AGGREGATION_DURATION;
-import static it.faerb.herakles.Util.Config.MAX_CONCURRENT_GEOPOINTS;
 import static it.faerb.herakles.Util.Config.OPTIMIZE_INTERVAL;
 
 
@@ -71,9 +52,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     private Handler optimizeHandler = new Handler();
     private static Boolean isRunning = false;
     private LocationManager locationManager;
-    private MyLocationNewOverlay locationOverlay;
-    private Polyline polylineOverlay;
-    private ArrayList<GeoPoint> polylinePoints = new ArrayList<>();
+    private MapFragment mapFragment = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,49 +66,12 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         View view = inflater.inflate(R.layout.fragment_track, container, false);
 
         // setup map
-        MapView map = (MapView) view.findViewById(R.id.map);
-        map.setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE);
-        map.setMultiTouchControls(true);
-        MapListener mapListener = new MapListener(this);
-        DelayedMapListener delayedMapListener = new DelayedMapListener(mapListener,
-                MAP_EVENT_AGGREGATION_DURATION);
-        map.setMapListener(delayedMapListener);
-        final IMapController mapController = map.getController();
-        mapController.setZoom(DEFAULT_ZOOM_LEVEL);
-
-        // set center to last known location
-        Location lastKnown = getLastKnownLocation();
-        if (lastKnown != null) {
-            mapController.setCenter(new GeoPoint(lastKnown));
-        }
-
-        polylineOverlay = new Polyline();
-        polylineOverlay.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
+        mapFragment = MapFragment.newInstance(true);
+        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+        transaction.add(R.id.frame_layout_map_live, mapFragment).commit();
         optimizeHandler.post(optimizePoints);
-        map.getOverlays().add(polylineOverlay);
-
-        locationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(getContext()), map);
-        map.getOverlays().add(locationOverlay);
-        locationOverlay.enableFollowLocation();
-
 
         // setup buttons
-        final ImageButton zoomToMeButton = (ImageButton) view.findViewById(R.id.button_zoom_to_me);
-        zoomToMeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GeoPoint loc = locationOverlay.getMyLocation();
-                if (loc != null) {
-                    mapController.animateTo(loc);
-                }
-                mapController.zoomTo(DEFAULT_ZOOM_LEVEL);
-                locationOverlay.enableFollowLocation();
-                Log.d(TAG, "clicked zoom to me button");
-                hideZoomToMeButton();
-            }
-        });
-        zoomToMeButton.setVisibility(View.GONE);
-
         final Button startStopButton = (Button) view.findViewById(R.id.button_start_stop);
         updateStartStopButtonText(startStopButton);
         startStopButton.setOnClickListener(new View.OnClickListener() {
@@ -222,12 +164,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
             distanceView.setText(Util.formatDistance(LocationLog
                     .getCurrentLocationLog().getDistance()));
 
-            // update polyline
+            // update mapFragment
             if (isRunning) {
-                for (Location loc : LocationLog.getNewLocations()) {
-                    polylinePoints.add(new GeoPoint(loc));
-                }
-                polylineOverlay.setPoints(polylinePoints);
+                mapFragment.update();
             }
 
             // schedule next refresh
@@ -262,7 +201,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 Util.Config.LOCATION_MIN_TIME, Util.Config.LOCATION_MIN_DISTANCE, this);
         locationManager.addGpsStatusListener(this);
-        locationOverlay.enableMyLocation();
+        mapFragment.enableMyLocation();
     }
 
     private void stopLocationUpdates() {
@@ -275,7 +214,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         }
         locationManager.removeUpdates(this);
         locationManager.removeGpsStatusListener(this);
-        locationOverlay.disableMyLocation();
+        mapFragment.disableMyLocation();
     }
 
     @Override
@@ -366,121 +305,32 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         stopLocationUpdates();
     }
 
-    private Location getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(getContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return null;
-        }
-        LocationManager lm = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        Criteria crit = new Criteria();
-        crit.setAccuracy(Criteria.ACCURACY_FINE);
-        return lm.getLastKnownLocation(lm.getBestProvider(crit, true));
-    }
 
-    // prevent multiple button animations
-    private boolean zoomToMeButtonVisible = false;
-
-    void hideZoomToMeButton() {
-        if (zoomToMeButtonVisible == false) {
-            return;
-        }
-        zoomToMeButtonVisible = false;
-        final ImageButton zoomToMeButton =
-                (ImageButton) getView().findViewById(R.id.button_zoom_to_me);
-        AlphaAnimation animation = new AlphaAnimation(1.0f, 0.0f);
-        animation.setDuration(1000);
-        animation.setRepeatCount(0);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                zoomToMeButton.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        zoomToMeButton.startAnimation(animation);
-        Log.d(TAG, "started hide zoom button animation");
-    }
-
-    void showZoomToMeButton() {
-        if (zoomToMeButtonVisible == true) {
-            return;
-        }
-        zoomToMeButtonVisible = true;
-        final ImageButton zoomToMeButton =
-                (ImageButton) getView().findViewById(R.id.button_zoom_to_me);
-        AlphaAnimation animation = new AlphaAnimation(0.0f, 1.0f);
-        animation.setDuration(500);
-        animation.setRepeatCount(0);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-               zoomToMeButton.setVisibility(View.VISIBLE);
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        zoomToMeButton.startAnimation(animation);
-        Log.d(TAG, "started show zoom button animation");
-    }
-
-    GeoPoint getMyLocation() {
-        if (locationOverlay != null) {
-            return locationOverlay.getMyLocation();
-        }
-        return null;
-    }
 
     private final Runnable optimizePoints = new Runnable() {
         @Override
         public void run() {
-            new PointOptimizer().execute(LocationLog.getCurrentLocationLog().getLocations());
+            new PointOptimizer().execute(mapFragment);
         }
     };
 
-    private class PointOptimizer extends AsyncTask<List<Location>, Void, ArrayList<GeoPoint>> {
+    public class PointOptimizer extends AsyncTask<MapFragment, Void, Void> {
 
         @Override
-        protected ArrayList<GeoPoint> doInBackground(List<Location>... lists) {
-            List<Location> list = lists[0];
-            // compute how many points are acceptable until next optimization
-            final int ACCEPTABLE_POINT_COUNT = MAX_CONCURRENT_GEOPOINTS -
-                    (OPTIMIZE_INTERVAL/LOCATION_MIN_TIME);
-            final int SKIP_POINTS = (int) Math.ceil((float)list.size()/ACCEPTABLE_POINT_COUNT);
-            ArrayList<GeoPoint> ret = new ArrayList<>();
-            for(int i = 0; i<list.size(); i+=SKIP_POINTS) {
-                ret.add(new GeoPoint(list.get(i)));
-            }
-            Log.d(TAG, String.format("optimized from: %d to: %d", list.size(), ret.size()));
-            return ret;
+        protected Void doInBackground(MapFragment... fragments) {
+            fragments[0].optimizePoints();
+            return null;
         }
 
         @Override
-        protected void onPostExecute(ArrayList<GeoPoint> list) {
-            polylinePoints = list;
-            polylineOverlay.setPoints(polylinePoints);
-            if (isRunning) {
+        protected void onPostExecute(Void res) {
+            if (TrackFragment.isRunning()) {
                 optimizeHandler.postDelayed(optimizePoints, OPTIMIZE_INTERVAL);
             }
         }
+    }
+
+    public static boolean isRunning() {
+        return isRunning;
     }
 }

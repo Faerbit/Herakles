@@ -19,16 +19,16 @@ class MapListener implements org.osmdroid.events.MapListener {
 
     private static final String TAG = "Herakles.MapListener";
 
-    private TrackFragment trackFragment;
+    private MapFragment mapFragment;
 
-    public MapListener(TrackFragment trackFragment){
-        this.trackFragment = trackFragment;
+    public MapListener(MapFragment mapFragment){
+        this.mapFragment = mapFragment;
     }
 
     @Override
     public boolean onScroll(final ScrollEvent event) {
         Log.d(TAG, "onScroll");
-        if (trackFragment.getMyLocation() == null) {
+        if (mapFragment.getMyLocation() == null) {
             return false;
         }
         final float centerLat = Math.round(
@@ -36,11 +36,11 @@ class MapListener implements org.osmdroid.events.MapListener {
         final float centerLong = Math.round(
                 event.getSource().getMapCenter().getLongitude() * 1000.0f) / 1000.0f;
         final float myLocLat = Math.round(
-                trackFragment.getMyLocation().getLatitude() * 1000.0f) / 1000.0f;
+                mapFragment.getMyLocation().getLatitude() * 1000.0f) / 1000.0f;
         final float myLocLong = Math.round(
-                trackFragment.getMyLocation().getLongitude() * 1000.0f) / 1000.0f;
+                mapFragment.getMyLocation().getLongitude() * 1000.0f) / 1000.0f;
         if (centerLat != myLocLat && centerLong != myLocLong) {
-            trackFragment.showZoomToMeButton();
+            mapFragment.showZoomButton();
             return true;
         }
         return false;
@@ -50,11 +50,11 @@ class MapListener implements org.osmdroid.events.MapListener {
     public boolean onZoom(final ZoomEvent event) {
         Log.d(TAG, "onZoom");
         // do not show button when the current location is unknown
-        if (trackFragment.getMyLocation() == null) {
+        if (mapFragment.getMyLocation() == null) {
             return false;
         }
         if (event.getZoomLevel() != DEFAULT_ZOOM_LEVEL) {
-            trackFragment.showZoomToMeButton();
+            mapFragment.showZoomButton();
             return true;
         }
         return false;
