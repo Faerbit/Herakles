@@ -88,7 +88,7 @@ public class LocationLoggerService extends Service implements LocationListener {
             return;
         }
         locationManager.removeUpdates(this);
-        LocationLog.save(getApplicationContext());
+        LocationLogIO.save(getApplicationContext());
         Log.d(TAG, String.format("onDestroy: clearOnExit %b", clearOnExit));
         if (clearOnExit) {
             LocationLog.clear();
@@ -98,7 +98,7 @@ public class LocationLoggerService extends Service implements LocationListener {
     private Runnable save = new Runnable() {
         @Override
         public void run() {
-            LocationLog.save(getApplicationContext());
+            LocationLogIO.save(getApplicationContext());
             saveHandler.postDelayed(save, Util.Config.SAVE_INTERVAL);
         }
     };

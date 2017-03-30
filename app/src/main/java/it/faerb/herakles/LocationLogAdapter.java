@@ -83,7 +83,7 @@ public class LocationLogAdapter  extends ArrayAdapter<LocationLog> {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         data.remove(position);
-                        LocationLog.deleteFile(context, position);
+                        LocationLogIO.deleteFile(context, position);
                         notifyDataSetChanged();
 
                     }});
