@@ -192,6 +192,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         if (!isRunning) {
             Log.d(TAG, "Clicked start Button");
             getActivity().startService(new Intent(getContext(), LocationLoggerService.class));
+            optimizeHandler.postDelayed(optimizePoints, OPTIMIZE_INTERVAL);
             isRunning = true;
         }
         else {
@@ -352,6 +353,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         super.onResume();
         if (TrackFragment.isRunning) {
             refreshHandler.post(refresh);
+            optimizeHandler.post(optimizePoints);
         }
         startLocationUpdates();
     }
@@ -360,6 +362,7 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
     public void onPause() {
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
+        optimizeHandler.removeCallbacksAndMessages(null);
         stopLocationUpdates();
     }
 
@@ -475,7 +478,9 @@ public class TrackFragment extends Fragment implements GpsStatus.Listener, Locat
         protected void onPostExecute(ArrayList<GeoPoint> list) {
             polylinePoints = list;
             polylineOverlay.setPoints(polylinePoints);
-            optimizeHandler.postDelayed(optimizePoints, OPTIMIZE_INTERVAL);
+            if (isRunning) {
+                optimizeHandler.postDelayed(optimizePoints, OPTIMIZE_INTERVAL);
+            }
         }
     }
 }
