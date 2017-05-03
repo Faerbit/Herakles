@@ -10,17 +10,12 @@ apply plugin: 'com.android.application'
 
 def getVersionCode = { ->
     try {
-        def hash = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'rev-list', '--tags', '--no-walk', '--max-count=1'
-            standardOutput = hash
-        }
-        hash = hash.toString().trim()
         def stdout = new ByteArrayOutputStream()
         exec {
-            commandLine 'git', 'rev-list', hash + '..HEAD', '--count'
+            commandLine 'git', 'rev-list', '--count', 'HEAD'
             standardOutput = stdout
         }
+        logger.lifecycle("Version Code: " + stdout.toString().trim())
         return Integer.parseInt(stdout.toString().trim())
     }
     catch (ignored) {
@@ -35,6 +30,7 @@ def getVersionName = { ->
             commandLine 'git', 'describe', '--tags', '--long'
             standardOutput = stdout
         }
+        logger.lifecycle("Version Name: " + stdout.toString().trim())
         return stdout.toString().trim()
     }
     catch (ignored) {
